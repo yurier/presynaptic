@@ -1,1 +1,62 @@
-# presynaptic
+# Vesicle Release Dynamics with Replenishment and Sigmoid-Based Release Probability
+
+This model simulates the dynamics of vesicle release in a synapse based on two primary vesicle pools - a reserve pool `R` and a docked pool `D` - and the influence of `Ca^2+` concentration, denoted as `Ca_pre`.
+
+## Model Overview
+
+![Insert Figure Here](path_to_your_figure.png)
+
+### 1. Model Variables
+
+- `R(t)`: Number of vesicles in the reserve pool at time `t`.
+- `D(t)`: Number of vesicles in the docked pool at time `t`.
+- `Ca_pre(t)`: `Ca^2+` concentration at the presynaptic terminal at time `t`.
+
+### 2. Initial Conditions
+
+- `D_0`: Initial number of vesicles at `D` (given as 25).
+- `R_0`: Initial number of vesicles at `R` (given as 30).
+
+### 3. Rate Constants
+
+- `τ_D`: Time constant for transition from `R` to `D` (given as 5 seconds).
+- `τ_R`: Time constant for transition from `D` to `R` (given as 45 seconds).
+- `τ_refR`: Time constant for replenishment to `R` (given as 40 seconds).
+
+### 4. Vesicle Transitions
+
+1. From reserve (`R`) to docked (`D`):
+\[ \frac{dR}{dt} = -\frac{(D_0 - D(t)) \cdot R(t)}{\tau_D} \]
+\[ \frac{dD}{dt} = \frac{(D_0 - D(t)) \cdot R(t)}{\tau_D} \]
+
+2. From docked (`D`) to reserve (`R`):
+\[ \frac{dD}{dt} = -\frac{(R_0 - R(t)) \cdot D(t)}{\tau_R} \]
+\[ \frac{dR}{dt} = \frac{(R_0 - R(t)) \cdot D(t)}{\tau_R} \]
+
+3. Replenishment to reserve (`R`):
+\[ \frac{dR}{dt} = \frac{R_0 - R(t)}{\tau_{refR}} \]
+
+### 5. `Ca^2+` Dynamics
+
+The concentration `Ca_pre` decays exponentially and has synchronous jumps based on a certain release rate:
+\[ Ca_{pre}(t+dt) = Ca_{pre}(t) \times e^{-\text{decay\_rate} \times dt} \]
+With jumps at regular intervals determined by the release rate.
+
+### 6. Vesicle Release Probability
+
+Vesicle release from `D` depends on a sigmoid function of `Ca_pre`:
+\[ P_{release}(t) = \frac{1}{1 + e^{-s \times (Ca_{pre}(t) - 1)}} \]
+Where `s` (given as 2) determines the slope of the sigmoid.
+
+## How to Use
+
+1. Clone this repository.
+2. Place your figure in the root directory and update the path in this README.
+3. Run the provided Python script to generate simulation results.
+
+## Credits
+
+This model and its documentation were generated based on insights from various research papers, notably:
+- Rizzoli and Betz, 2005
+- Alabi and Tsien, 2012
+
