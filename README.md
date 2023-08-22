@@ -38,7 +38,7 @@ This model simulates the dynamics of vesicle release in a synapse based on two p
 
 ### 5. Ca^2+ Dynamics
 
-The concentration \(Ca_{pre}\) decays exponentially and has synchronous jumps based on a certain release rate:
+The concentration $(Ca_{pre})$ decays exponentially and has synchronous jumps based on a certain release rate:
 
 $$Ca_{pre}(t+dt) = Ca_{pre}(t) \times e^{-\text{decay_rate} \times dt}$$
 
