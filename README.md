@@ -4,7 +4,7 @@ This model simulates the dynamics of vesicle release in a synapse based on two p
 
 ## Model Overview
 
-![Insert Figure Here](output.png)
+![Figure](/output.png)
 
 ### 1. Model Variables
 
