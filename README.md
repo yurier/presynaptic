@@ -36,19 +36,19 @@ This model simulates the dynamics of vesicle release in a synapse based on two p
 - **Replenishment to reserve (R)**:
   $$\frac{dR}{dt} = \frac{R_0 - R(t)}{\tau_{refR}}$$
 
-### 5. Ca^2+ Dynamics
+### 5. $Ca^2+$ Dynamics
 
 The concentration $(Ca_{pre})$ decays exponentially and has synchronous jumps based on a certain release rate:
 
-$$Ca_{pre}(t+dt) = Ca_{pre}(t) \times e^{-\text{decay_rate} \times dt}$$
+	$$Ca_{pre}(t+dt) = Ca_{pre}(t) \times e^{-\text{decay_rate} \times dt}$$
 
 With jumps at regular intervals determined by the release rate.
 
 ### 6. Vesicle Release Probability
 
-Vesicle release from D depends on a sigmoid function of \(Ca_{pre}\):
+Vesicle release from D depends on a sigmoid function of $Ca_{pre}$:
 
-$$P_{release}(t) = \frac{1}{1 + e^{-s \times (Ca_{pre}(t) - 1)}}$$
+	$$P_{release}(t) = \frac{1}{1 + e^{-s \times (Ca_{pre}(t) - 1)}}$$
 
 Where \(s\) (given as 2) determines the slope of the sigmoid.
 
