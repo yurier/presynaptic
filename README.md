@@ -26,33 +26,22 @@ This model simulates the dynamics of vesicle release in a synapse based on two p
 ### 4. Vesicle Transitions
 
 - **From reserve (R) to docked (D)**:
-  \[
-  \frac{dR}{dt} = -\frac{(D_0 - D(t)) \cdot R(t)}{\tau_D}
-  \]
-  \[
-  \frac{dD}{dt} = \frac{(D_0 - D(t)) \cdot R(t)}{\tau_D}
-  \]
+  $$\frac{dR}{dt} = -\frac{(D_0 - D(t)) \cdot R(t)}{\tau_D}$$
+  $$\frac{dD}{dt} = \frac{(D_0 - D(t)) \cdot R(t)}{\tau_D}$$
 
 - **From docked (D) to reserve (R)**:
-  \[
-  \frac{dD}{dt} = -\frac{(R_0 - R(t)) \cdot D(t)}{\tau_R}
-  \]
-  \[
-  \frac{dR}{dt} = \frac{(R_0 - R(t)) \cdot D(t)}{\tau_R}
-  \]
+  $$\frac{dD}{dt} = -\frac{(R_0 - R(t)) \cdot D(t)}{\tau_R}$$
+  $$\frac{dR}{dt} = \frac{(R_0 - R(t)) \cdot D(t)}{\tau_R}$$
 
 - **Replenishment to reserve (R)**:
-  \[
-  \frac{dR}{dt} = \frac{R_0 - R(t)}{\tau_{refR}}
-  \]
+  $$\frac{dR}{dt} = \frac{R_0 - R(t)}{\tau_{refR}}$$
 
 ### 5. Ca^2+ Dynamics
 
-The concentration \( Ca_{pre} \) decays exponentially and has synchronous jumps based on a certain release rate:
-\[
-Ca_{pre}(t+dt) = Ca_{pre}(t) \times e^{-\text{decay_rate} \times dt}
-\]
+The concentration \(Ca_{pre}\) decays exponentially and has synchronous jumps based on a certain release rate:
+$$Ca_{pre}(t+dt) = Ca_{pre}(t) \times e^{-\text{decay_rate} \times dt}$$
 With jumps at regular intervals determined by the release rate.
+
 
 ### 6. Vesicle Release Probability
 
