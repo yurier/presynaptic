@@ -59,16 +59,15 @@ Where \(s\) (given as 2) determines the slope of the sigmoid.
 2. Place your figure in the root directory and update the path in this README.
 3. Run the provided Python script to generate simulation results.
 
-
-
 ## TODO
-[] Make it neuron? (maybe too complicated, but usefull if we want to scalat it easily)
-[] Fit to data (The Kinetics of Synaptic Vesicle Pool Depletion at CNS Synaptic Terminals)
+- [ ] Make it neuron? (maybe too complicated, but useful if we want to scale it easily)
+- [ ] Fit to data (The Kinetics of Synaptic Vesicle Pool Depletion at CNS Synaptic Terminals)
 
 ## Some papers
 
-* ![Joselevitch, Christina, and David Zenisek. "Direct observation of vesicle transport on the synaptic ribbon provides evidence that vesicles are mobilized and prepared rapidly for release." Journal of Neuroscience 40.39 (2020): 7390-7404.]{https://www.jneurosci.org/content/40/39/7390}
-* ![Hallermann, Stefan. "Calcium channels for endocytosis." The Journal of Physiology 592.Pt 16 (2014): 3343.]{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4229332/}
-* ![Fernández-Alfonso, Tomás, and Timothy A. Ryan. "The kinetics of synaptic vesicle pool depletion at CNS synaptic terminals." Neuron 41.6 (2004): 943-953.]{https://doi.org/10.1016/S0896-6273(04)00113-8}
+- [Joselevitch, Christina, and David Zenisek. "Direct observation of vesicle transport on the synaptic ribbon provides evidence that vesicles are mobilized and prepared rapidly for release." Journal of Neuroscience 40.39 (2020): 7390-7404.](https://www.jneurosci.org/content/40/39/7390)
+- [Hallermann, Stefan. "Calcium channels for endocytosis." The Journal of Physiology 592.Pt 16 (2014): 3343.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4229332/)
+- [Fernández-Alfonso, Tomás, and Timothy A. Ryan. "The kinetics of synaptic vesicle pool depletion at CNS synaptic terminals." Neuron 41.6 (2004): 943-953.](https://doi.org/10.1016/S0896-6273(04)00113-8)
+
 
 
