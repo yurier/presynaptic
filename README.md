@@ -62,7 +62,8 @@ Where \(s\) (given as 2) determines the slope of the sigmoid.
 ## TODO
 - [ ] Make it neuron? (maybe too complicated, but useful if we want to scale it easily)
 - [ ] Fit to data (The Kinetics of Synaptic Vesicle Pool Depletion at CNS Synaptic Terminals)
-
+![Figure](/Fernandez-Alfonso-2008_dataset.png)
+ 
 ## Some papers
 
 - [Joselevitch, Christina, and David Zenisek. "Direct observation of vesicle transport on the synaptic ribbon provides evidence that vesicles are mobilized and prepared rapidly for release." Journal of Neuroscience 40.39 (2020): 7390-7404.](https://www.jneurosci.org/content/40/39/7390)
