@@ -16,7 +16,7 @@ def sigmoid(z, s=1, h=4):
     """
     return 1 / (1 + np.exp(-s*(z-h)))
 
-def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate):
+def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration):
     """
     Simulate vesicle release dynamics considering vesicle replenishment, calcium-driven exponential decay, 
     and a sigmoid-based vesicle release probability.
@@ -56,13 +56,30 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
 
     t = 0
 
+    # Initialize a counter for release attempts
+    release_attempts = 0
+
+    # Initialize a flag for the quiet period
+    in_quiet_period = False
+    
+    # Initialize timer for the quiet period
+    quiet_timer = 0
+
     # Main simulation loop
-    while t < T:
+    while t < T+ quiet_duration:
         # Compute the time for the next potential vesicle release
         next_release_time = (np.floor(t * release_rate) + 1) / release_rate 
         
         # Process each time step until the next release time or end of simulation
-        while t < next_release_time and t < T:  
+        while t < next_release_time and t < T + quiet_duration:  # Adjusted condition here as well
+            if in_quiet_period:
+                quiet_timer += dt
+                if quiet_timer >= quiet_duration:
+                    # Exit the quiet period
+                    in_quiet_period = False
+                    quiet_timer = 0
+                    release_attempts = 0  # Reset the counter
+
             # Exponential decay of calcium
             Ca_pre *= np.exp(-decay_rate * dt)
 
@@ -95,12 +112,19 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
             docked_values.append(D)
             Ca_pre_values.append(Ca_pre)
 
-        # Try to release a vesicle at the end of the release interval
-        Ca_pre += jump_size
-        if np.random.rand() < sigmoid(Ca_pre, s):
-            if D > 0:
-                D -= 1
-                release_times.append(t)
+        # Attempt to release only if not in a quiet period
+        if not in_quiet_period:
+            release_attempts += 1
+            Ca_pre += jump_size
+            if np.random.rand() < sigmoid(Ca_pre, s):
+                if D > 0:
+                    D -= 1
+                    release_times.append(t)
+
+            # Check if we've reached the maximum number of attempts
+            if release_attempts >= max_attempts:
+                in_quiet_period = True
+
 
     return times, reserve_values, docked_values, Ca_pre_values, release_times
 
@@ -116,10 +140,12 @@ jump_size = 1
 T = 20
 dt = 0.01
 release_rate = 5.0
+max_attempts=100
+quiet_duration=100
 
 # Execute the simulation
 times, reserve_values, docked_values, Ca_pre_values, release_times = vesicle_release_with_decay(
-    D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate)
+    D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration)
 
 # Plotting the simulation results
 plt.figure(figsize=(12, 8))
