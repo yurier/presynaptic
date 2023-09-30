@@ -16,6 +16,7 @@ def sigmoid(z, s=1, h=4):
     """
     return 1 / (1 + np.exp(-s*(z-h)))
 
+# Main code
 def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration):
     """
     Simulate vesicle release dynamics considering vesicle replenishment, calcium-driven exponential decay, 
@@ -71,14 +72,13 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
         next_release_time = (np.floor(t * release_rate) + 1) / release_rate 
         
         # Process each time step until the next release time or end of simulation
-        while t < next_release_time and t < T + quiet_duration:  # Adjusted condition here as well
+        while t < next_release_time and t < T + quiet_duration: 
             if in_quiet_period:
                 quiet_timer += dt
                 if quiet_timer >= quiet_duration:
                     # Exit the quiet period
                     in_quiet_period = False
                     quiet_timer = 0
-                    release_attempts = 0  # Reset the counter
 
             # Exponential decay of calcium
             Ca_pre *= np.exp(-decay_rate * dt)
@@ -113,7 +113,7 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
             Ca_pre_values.append(Ca_pre)
 
         # Attempt to release only if not in a quiet period
-        if not in_quiet_period:
+        if not in_quiet_period and release_attempts < max_attempts:
             release_attempts += 1
             Ca_pre += jump_size
             if np.random.rand() < sigmoid(Ca_pre, s):
@@ -121,9 +121,9 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
                     D -= 1
                     release_times.append(t)
 
-            # Check if we've reached the maximum number of attempts
-            if release_attempts >= max_attempts:
-                in_quiet_period = True
+        # Check if we've reached the maximum number of attempts
+        if release_attempts == max_attempts:
+            in_quiet_period = True
 
 
     return times, reserve_values, docked_values, Ca_pre_values, release_times
@@ -131,16 +131,16 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
 # Setting the parameters for the simulation
 D0 = 25
 R0 = 30
-tau_D = 10.0  
-tau_R = 80.0  
-tau_refR = 20.0  
+tau_D = 20  
+tau_R = 10  
+tau_refR = 20
 s = 2.0
-decay_rate = 1.2  
+decay_rate = 0.02  
 jump_size = 1
 T = 20
 dt = 0.01
-release_rate = 5.0
-max_attempts=100
+release_rate = 1.0
+max_attempts=50
 quiet_duration=100
 
 # Execute the simulation
@@ -172,3 +172,5 @@ plt.legend()
 
 plt.tight_layout()
 plt.show()
+
+
