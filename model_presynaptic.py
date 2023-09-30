@@ -1,8 +1,9 @@
+# Import necessary libraries
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Define the sigmoid function
-def sigmoid(z, s=1, h=4):
+# Defining the sigmoid function used for vesicle release probability
+def sigmoid(z, s=2, h=2):
     """
     Sigmoid function with slope s and half-activation at h.
     
@@ -16,8 +17,8 @@ def sigmoid(z, s=1, h=4):
     """
     return 1 / (1 + np.exp(-s*(z-h)))
 
-# Main code
-def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration):
+# Defining the main simulation function for vesicle release with decay
+def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration):
     """
     Simulate vesicle release dynamics considering vesicle replenishment, calcium-driven exponential decay, 
     and a sigmoid-based vesicle release probability.
@@ -43,80 +44,64 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
     - release_times: Time points at which vesicle releases occurred
     """
     
-    # Initialize vesicle counts and calcium concentration
-    R = R0
-    D = D0
-    Ca_pre = 0
+    # Initializing vesicle counts, calcium concentration, and Ca_jump
+    R, D, Ca_pre, Ca_jump = R0, D0, 0, 1  # Initialize Ca_jump to 0 or any desired value
 
-    # Lists to store simulation results
-    times = [0]
-    reserve_values = [R]
-    docked_values = [D]
-    Ca_pre_values = [Ca_pre]
-    release_times = []
+    # Initializing lists to store simulation results
+    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = [0], [R], [D], [Ca_pre], [Ca_jump], [0], []
 
-    t = 0
+    t, release_attempts, in_quiet_period, quiet_timer = 0, 0, False, 0  # Additional initializations
 
-    # Initialize a counter for release attempts
-    release_attempts = 0
-
-    # Initialize a flag for the quiet period
-    in_quiet_period = False
-    
-    # Initialize timer for the quiet period
-    quiet_timer = 0
-
-    # Main simulation loop
+    # Main simulation loop to process each time step
     while t < T+ quiet_duration:
         # Compute the time for the next potential vesicle release
         next_release_time = (np.floor(t * release_rate) + 1) / release_rate 
         
-        # Process each time step until the next release time or end of simulation
+        # Inner loop to process each time step until the next release time or end of simulation
         while t < next_release_time and t < T + quiet_duration: 
             if in_quiet_period:
                 quiet_timer += dt
                 if quiet_timer >= quiet_duration:
-                    # Exit the quiet period
-                    in_quiet_period = False
-                    quiet_timer = 0
+                    in_quiet_period, quiet_timer = False, 0  # Resetting quiet period and timer
 
             # Exponential decay of calcium
             Ca_pre *= np.exp(-decay_rate * dt)
+
+            # Update Ca_jump using Euler's method for numerical integration
+            dCa_jump = (1 - Ca_jump) * tau_adap - (delta * Ca_jump * Ca_pre)
+            Ca_jump += dCa_jump * dt  # Update Ca_jump
 
             # Random event to determine vesicle movement
             rand_event = np.random.uniform(0, 1)
 
             # Calculate the rates of different transitions
-            transition_RD = (D0 - D) * R / tau_D * dt
-            transition_DR = (R0 - R) * D / tau_R * dt
-            replenish_R = (R0 - R) / tau_refR * dt
+            transition_RD = ((D0 - D) * R / tau_D) * dt
+            transition_DR = ((R0 - R) * D / tau_R) * dt
+            replenish_R = ((R0 - R) / tau_refR) * dt
 
             # Process vesicle movements based on the computed rates
             # Gillespie's algorithm-'a-chien (method to simulate the PDMP stochastic part)
-            if rand_event < transition_RD:
-                if R > 0:
-                    R -= 1
-                    D += 1
-            elif rand_event < transition_RD + transition_DR:
-                if D > 0:
-                    D -= 1
-                    R += 1
-            elif rand_event < transition_RD + transition_DR + replenish_R:
-                if R < R0:
-                    R += 1
+            if rand_event < transition_RD and R > 0: R, D = R - 1, D + 1
+            elif rand_event < transition_RD + transition_DR and D > 0: D, R = D - 1, R + 1
+            elif rand_event < transition_RD + transition_DR + replenish_R and R < R0: R += 1
 
-            # Move forward in time
+            # Updating time and storing simulation results
             t += dt
-            times.append(t)
-            reserve_values.append(R)
-            docked_values.append(D)
-            Ca_pre_values.append(Ca_pre)
+            times.extend([t])
+            reserve_values.extend([R])
+            docked_values.extend([D])
+            Ca_pre_values.extend([Ca_pre])
+            Ca_jump_values.extend([Ca_jump])
+            Sigmoid_proba.extend([sigmoid(Ca_pre, s)])
+
 
         # Attempt to release only if not in a quiet period
         if not in_quiet_period and release_attempts < max_attempts:
             release_attempts += 1
-            Ca_pre += jump_size
-            if np.random.rand() < sigmoid(Ca_pre, s):
+            Ca_pre += jump_size * Ca_jump
+            rand = np.random.rand()
+            if rand < (sigmoid(Ca_pre, s)):
+                print(rand, sigmoid(Ca_pre, s))
                 if D > 0:
                     D -= 1
                     release_times.append(t)
@@ -126,26 +111,29 @@ def vesicle_release_with_decay(D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, ju
             in_quiet_period = True
 
 
-    return times, reserve_values, docked_values, Ca_pre_values, release_times
+    return times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba,release_times
 
 # Setting the parameters for the simulation
 D0 = 25
 R0 = 30
-tau_D = 20  
-tau_R = 10  
-tau_refR = 20
+tau_D = 5000  
+tau_R = 1500  
+tau_refR = 200
 s = 2.0
-decay_rate = 0.02  
+decay_rate = 0.2  
 jump_size = 1
-T = 20
+T = 200
 dt = 0.01
-release_rate = 1.0
-max_attempts=50
-quiet_duration=100
+release_rate = .5
+max_attempts=150
+quiet_duration=200
+# Parameter for Ca_jump adaptation
+tau_adap = 0.1  # Set the value of tau_adap
+delta = 0.04  # Set the value of delta
 
 # Execute the simulation
-times, reserve_values, docked_values, Ca_pre_values, release_times = vesicle_release_with_decay(
-    D0, R0, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration)
+times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
+    D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration)
 
 # Plotting the simulation results
 plt.figure(figsize=(12, 8))
@@ -170,7 +158,43 @@ plt.title('Ca_pre Function with Jumps and Decay')
 plt.grid(True)
 plt.legend()
 
+# Plot calcium dynamics
+plt.subplot(3, 1, 3)
+plt.plot(times, Ca_jump_values, label="Ca_jump adaptation")
+plt.xlabel('Time')
+plt.ylabel('Ca_pre Value')
+plt.title('Ca_pre Function with Jumps and Decay')
+plt.grid(True)
+plt.legend()
 plt.tight_layout()
+
+# Plot calcium dynamics
+plt.subplot(3, 1, 3)
+plt.plot(times, Sigmoid_proba, label="Probability")
+plt.xlabel('Time')
+plt.ylabel('prob(Ca)')
+plt.title('Sigmoid probability and Ca2+ jump adaptation')
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+
+
 plt.show()
 
+# Generate a range of values to plot
+#z_values = np.linspace(-10, 10, 400)  # Generate 400 values between -10 and 10
 
+# Compute the corresponding sigmoid values
+#sigmoid_values = sigmoid(z_values, s=2, h=6)  # Use s=1 and h=4
+
+# Plot the sigmoid function
+#plt.figure(figsize=(8, 6))
+#plt.plot(z_values, sigmoid_values, label=f"Sigmoid with s=1, h=4")
+#plt.axvline(0, color='gray', lw=0.5)  # Add a vertical line at x=0
+#plt.axhline(0.5, color='gray', lw=0.5)  # Add a horizontal line at y=0.5
+#plt.xlabel('z')
+#plt.ylabel('sigmoid(z)')
+#plt.title('Sigmoid Function')
+#plt.legend()
+#plt.grid(True)
+#plt.show()
