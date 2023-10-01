@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Defining the sigmoid function used for vesicle release probability
-def sigmoid(z, s=2, h=2):
+def sigmoid(z, s, h):
     """
     Sigmoid function with slope s and half-activation at h.
     
@@ -18,7 +18,7 @@ def sigmoid(z, s=2, h=2):
     return 1 / (1 + np.exp(-s*(z-h)))
 
 # Defining the main simulation function for vesicle release with decay
-def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration):
+def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration):
     """
     Simulate vesicle release dynamics considering vesicle replenishment, calcium-driven exponential decay, 
     and a sigmoid-based vesicle release probability.
@@ -92,7 +92,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
             docked_values.extend([D])
             Ca_pre_values.extend([Ca_pre])
             Ca_jump_values.extend([Ca_jump])
-            Sigmoid_proba.extend([sigmoid(Ca_pre, s)])
+            Sigmoid_proba.extend([sigmoid(Ca_pre, s, h)])
 
 
         # Attempt to release only if not in a quiet period
@@ -100,8 +100,8 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
             release_attempts += 1
             Ca_pre += jump_size * Ca_jump
             rand = np.random.rand()
-            if rand < (sigmoid(Ca_pre, s)):
-                print(rand, sigmoid(Ca_pre, s))
+            if rand < (sigmoid(Ca_pre, s, h)):
+                print(rand, sigmoid(Ca_pre, s, h))
                 if D > 0:
                     D -= 1
                     release_times.append(t)
@@ -116,16 +116,17 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
 # Setting the parameters for the simulation
 D0 = 25
 R0 = 30
-tau_D = 5000  
-tau_R = 1500  
-tau_refR = 200
-s = 2.0
-decay_rate = 0.2  
+tau_D = 5  
+tau_R = 45  
+tau_refR = 10
+s = 0.5
+h = 3
+decay_rate = 2
 jump_size = 1
-T = 200
-dt = 0.01
-release_rate = .5
-max_attempts=150
+dt = 0.05
+release_rate = 2
+max_attempts=300
+T = max_attempts/release_rate
 quiet_duration=200
 # Parameter for Ca_jump adaptation
 tau_adap = 0.1  # Set the value of tau_adap
@@ -133,7 +134,7 @@ delta = 0.04  # Set the value of delta
 
 # Execute the simulation
 times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
-    D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration)
+    D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration)
 
 # Plotting the simulation results
 plt.figure(figsize=(12, 8))
@@ -182,19 +183,19 @@ plt.tight_layout()
 plt.show()
 
 # Generate a range of values to plot
-#z_values = np.linspace(-10, 10, 400)  # Generate 400 values between -10 and 10
+z_values = np.linspace(-10, 10, 400)  # Generate 400 values between -10 and 10
 
 # Compute the corresponding sigmoid values
-#sigmoid_values = sigmoid(z_values, s=2, h=6)  # Use s=1 and h=4
+sigmoid_values = sigmoid(z_values, s, h)  # Use s=1 and h=4
 
 # Plot the sigmoid function
-#plt.figure(figsize=(8, 6))
-#plt.plot(z_values, sigmoid_values, label=f"Sigmoid with s=1, h=4")
-#plt.axvline(0, color='gray', lw=0.5)  # Add a vertical line at x=0
-#plt.axhline(0.5, color='gray', lw=0.5)  # Add a horizontal line at y=0.5
-#plt.xlabel('z')
-#plt.ylabel('sigmoid(z)')
-#plt.title('Sigmoid Function')
-#plt.legend()
-#plt.grid(True)
-#plt.show()
+plt.figure(figsize=(8, 6))
+plt.plot(z_values, sigmoid_values, label=f"Sigmoid with s=1, h=4")
+plt.axvline(0, color='gray', lw=0.5)  # Add a vertical line at x=0
+plt.axhline(0.5, color='gray', lw=0.5)  # Add a horizontal line at y=0.5
+plt.xlabel('z')
+plt.ylabel('sigmoid(z)')
+plt.title('Sigmoid Function')
+plt.legend()
+plt.grid(True)
+plt.show()
