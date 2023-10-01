@@ -224,18 +224,25 @@ def callback(params, T, release_rate):
 # Show the window and run the Qt event loop
 main_window.show()
 
+# Initial parameters
+initial_params = [tau_D, tau_R]  # Only pass tau_D and tau_R as initial parameters
+
 # Main loop for loading each dataset and optimizing parameters
 for file, label, freq in zip(csv_files, labels, frequencies):
     T = max_attempts / freq  # Calculate T based on the frequency
     df = pd.read_csv(file, header=None, names=['time', 'deltaF spH'])
     observed_data = df['deltaF spH']
     observed_time = df['time']
-    initial_params = [tau_D, tau_R]  # Only pass tau_D and tau_R as initial parameters
+    
+    # Call the minimize function
     result = minimize(
         objective, 
         initial_params, 
         args=(observed_data, observed_time, jump_size, freq, max_attempts, quiet_duration, T), 
         method='Nelder-Mead',  
         callback=lambda params: callback(params, T, freq),
-        options={'xatol': 1e-2, 'fatol': 1e-2, 'disp': True}  # Set tolerance for convergence here
+        options={'xatol': 1e-2, 'fatol': 1e-2, 'disp': True, 'maxiter': 20}  # Set tolerance for convergence here
     )
+    
+    # Update initial_params for the next iteration
+    initial_params = result.x
