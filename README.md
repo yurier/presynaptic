@@ -6,6 +6,10 @@ This model simulates the dynamics of vesicle release in a synapse based on two p
 
 ![Figure](/output.png)
 
+## Simulation Details
+
+The simulation uses a combination of Gillespie's algorithm and Euler's method for numerical integration to simulate vesicle dynamics, calcium concentration decay, vesicle release events, and the adaptation of calcium jumps.
+
 ### 1. Model Variables
 
 - `R(t)`: Number of vesicles in the reserve pool at time `t`.
@@ -71,4 +75,12 @@ Where \(s\) (given as 2) determines the slope of the sigmoid.
 - [Fernández-Alfonso, Tomás, and Timothy A. Ryan. "The kinetics of synaptic vesicle pool depletion at CNS synaptic terminals." Neuron 41.6 (2004): 943-953.](https://doi.org/10.1016/S0896-6273(04)00113-8)
 
 
+## Parameter Optimization
 
+The `parameter_optimization_simultaneous.py` script offers a way to fine-tune the vesicle release model parameters based on observed data. By leveraging the Nelder-Mead optimization method, the script aims to minimize the mean squared error (MSE) between the simulated and observed data. For a more interactive experience, the optimization process is visualized in real-time using PyQt5 and pyqtgraph.
+
+### How to Use
+
+1. Ensure you have the necessary libraries installed: 
+   ```bash
+   pip install numpy pandas scipy pyqtgraph PyQt5
