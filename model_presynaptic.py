@@ -50,7 +50,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
     # Initializing lists to store simulation results
     times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = [0], [R], [D], [Ca_pre], [Ca_jump], [0], []
 
-    t, release_attempts, in_quiet_period, quiet_timer = 0, 0, False, 0  # Additional initializations
+    t, release_attempts, in_quiet_period, quiet_timer, idx_dt = 0, 0, False, 0, 0  # Additional initializations
 
     # Main simulation loop to process each time step
     while t < T+ quiet_duration:
@@ -86,7 +86,9 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
             elif rand_event < transition_RD + transition_DR + replenish_R and R < R0: R += 1
 
             # Updating time and storing simulation results
-            t += dt
+            # t += dt
+            idx_dt += 1
+            t = idx_dt*dt
             times.extend([t])
             reserve_values.extend([R])
             docked_values.extend([D])
@@ -140,7 +142,7 @@ times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_pro
 plt.figure(figsize=(12, 8))
 
 # Plot vesicle dynamics
-plt.subplot(3, 1, 1)
+ax_1 = plt.subplot(3, 1, 1)
 plt.step(times, reserve_values, where='post', label="Reserve Pool (R)")
 plt.step(times, docked_values, where='post', label="Docked Pool (D)")
 plt.scatter(release_times, [D0] * len(release_times), color='red', label="Release Event", s=15)
@@ -151,7 +153,7 @@ plt.grid(True)
 plt.legend()
 
 # Plot calcium dynamics
-plt.subplot(3, 1, 2)
+plt.subplot(3, 1, 2, sharex=ax_1)
 plt.plot(times, Ca_pre_values, label="Ca_pre (with jumps and decay)")
 plt.xlabel('Time')
 plt.ylabel('Ca_pre Value')
@@ -160,7 +162,7 @@ plt.grid(True)
 plt.legend()
 
 # Plot calcium dynamics
-plt.subplot(3, 1, 3)
+plt.subplot(3, 1, 3, sharex=ax_1)
 plt.plot(times, Ca_jump_values, label="Ca_jump adaptation")
 plt.xlabel('Time')
 plt.ylabel('Ca_pre Value')
