@@ -116,86 +116,115 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
 # Setting the parameters for the simulation
 D0 = 25
 R0 = 30
-tau_D = 5  
-tau_R = 45  
-tau_refR = 10
-s = 0.5
-h = 3
-decay_rate = 2
+tau_D = 3.12883049e+01#2.68104323e+01#2.60381944e+01#2.51406722e+01  
+tau_R = 1.58603292e+01#2.01812934e+01#1.97873162e+01  
+tau_refR = 1.89092587e+01#2.22210394e+01#2.17659560e+01
+s = 5.52438840e-01#7.90609246e-01#0.8
+h = 6.62098313e+00#5.26474562e+00#6.08386430e+00
+decay_rate = 5.28309299e+00
 jump_size = 1
 dt = 0.05
-release_rate = 2
+release_rate = 30
 max_attempts=300
 T = max_attempts/release_rate
 quiet_duration=200
 # Parameter for Ca_jump adaptation
-tau_adap = 0.1  # Set the value of tau_adap
-delta = 0.04  # Set the value of delta
+tau_adap = 5.36337317e-02#5.24849781e-02#5.24280854e-02#5.12249414e-02 
+delta = 2.20954120e-02#2.09973392e-02#2.09796610e-02#1.98393158e-02
 
 # Execute the simulation
 times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
     D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration)
+
+[3.12883049e+01 1.58603292e+01 1.89092587e+01 5.52438840e-01
+ 6.62098313e+00 5.28309299e+00 5.36337317e-02 2.20954120e-02]
+# Plotting the simulation results
+# plt.figure(figsize=(12, 8))
+
+# Plot vesicle dynamics
+# plt.subplot(3, 1, 1)
+# plt.step(times, reserve_values, where='post', label="Reserve Pool (R)")
+# plt.step(times, docked_values/np.max(docked_values), where='post', label="Docked Pool (D)")
+#plt.scatter(release_times, [D0] * len(release_times), color='red', label="Release Event", s=15)
+# plt.xlabel('Time')
+# plt.ylabel('Vesicle Count')
+# plt.title('Vesicle Release Dynamics with Replenishment')
+# plt.grid(True)
+# plt.legend()
+
+# # Plot calcium dynamics
+# plt.subplot(3, 1, 2)
+# plt.plot(times, Ca_pre_values, label="Ca_pre (with jumps and decay)")
+# plt.xlabel('Time')
+# plt.ylabel('Ca_pre Value')
+# plt.title('Ca_pre Function with Jumps and Decay')
+# plt.grid(True)
+# plt.legend()
+
+# # Plot calcium dynamics
+# plt.subplot(3, 1, 3)
+# plt.plot(times, Ca_jump_values, label="Ca_jump adaptation")
+# plt.xlabel('Time')
+# plt.ylabel('Ca_pre Value')
+# plt.title('Ca_pre Function with Jumps and Decay')
+# plt.grid(True)
+# plt.legend()
+# plt.tight_layout()
+
+# # Plot calcium dynamics
+# plt.subplot(3, 1, 3)
+# plt.plot(times, Sigmoid_proba, label="Probability")
+# plt.xlabel('Time')
+# plt.ylabel('prob(Ca) and adaptation')
+# plt.title('Sigmoid probability and Ca2+ jump adaptation')
+# plt.grid(True)
+# plt.legend()
+# plt.tight_layout()
+
+
+# plt.show()
+
+# # Generate a range of values to plot
+# z_values = np.linspace(-10, 10, 400)  # Generate 400 values between -10 and 10
+
+# # Compute the corresponding sigmoid values
+# sigmoid_values = sigmoid(z_values, s, h)  # Use s=1 and h=4
+
+# # Plot the sigmoid function
+# plt.figure(figsize=(8, 6))
+# plt.plot(z_values, sigmoid_values, label=f"Sigmoid with s=1, h=4")
+# plt.axvline(0, color='gray', lw=0.5)  # Add a vertical line at x=0
+# plt.axhline(0.5, color='gray', lw=0.5)  # Add a horizontal line at y=0.5
+# plt.xlabel('z')
+# plt.ylabel('sigmoid(z)')
+# plt.title('Sigmoid Function')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
 
 # Plotting the simulation results
 plt.figure(figsize=(12, 8))
 
 # Plot vesicle dynamics
 plt.subplot(3, 1, 1)
-plt.step(times, reserve_values, where='post', label="Reserve Pool (R)")
-plt.step(times, docked_values, where='post', label="Docked Pool (D)")
-plt.scatter(release_times, [D0] * len(release_times), color='red', label="Release Event", s=15)
-plt.xlabel('Time')
-plt.ylabel('Vesicle Count')
-plt.title('Vesicle Release Dynamics with Replenishment')
-plt.grid(True)
-plt.legend()
 
-# Plot calcium dynamics
-plt.subplot(3, 1, 2)
-plt.plot(times, Ca_pre_values, label="Ca_pre (with jumps and decay)")
-plt.xlabel('Time')
-plt.ylabel('Ca_pre Value')
-plt.title('Ca_pre Function with Jumps and Decay')
-plt.grid(True)
-plt.legend()
+for release_rate in [2,5,10,20,30]:
+    # Execute the simulation
+    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
+        D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T, dt, release_rate, max_attempts, quiet_duration)
 
-# Plot calcium dynamics
-plt.subplot(3, 1, 3)
-plt.plot(times, Ca_jump_values, label="Ca_jump adaptation")
-plt.xlabel('Time')
-plt.ylabel('Ca_pre Value')
-plt.title('Ca_pre Function with Jumps and Decay')
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
+    # Plotting the simulation results
+    # plt.figure(figsize=(12, 8))
 
-# Plot calcium dynamics
-plt.subplot(3, 1, 3)
-plt.plot(times, Sigmoid_proba, label="Probability")
-plt.xlabel('Time')
-plt.ylabel('prob(Ca) and adaptation')
-plt.title('Sigmoid probability and Ca2+ jump adaptation')
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
+    # Plot vesicle dynamics
+    # plt.subplot(3, 1, 1)
+    # plt.step(times, reserve_values, where='post', label="Reserve Pool (R)")
+    plt.step(times, 1-docked_values/np.max(docked_values), where='post', label="Docked Pool (D)")
+    #plt.scatter(release_times, [D0] * len(release_times), color='red', label="Release Event", s=15)
+    plt.xlabel('Time')
+    plt.ylabel('Vesicle Count')
+    plt.title('Vesicle Release Dynamics with Replenishment')
+    plt.grid(True)
+    plt.legend()
 
-
-plt.show()
-
-# Generate a range of values to plot
-z_values = np.linspace(-10, 10, 400)  # Generate 400 values between -10 and 10
-
-# Compute the corresponding sigmoid values
-sigmoid_values = sigmoid(z_values, s, h)  # Use s=1 and h=4
-
-# Plot the sigmoid function
-plt.figure(figsize=(8, 6))
-plt.plot(z_values, sigmoid_values, label=f"Sigmoid with s=1, h=4")
-plt.axvline(0, color='gray', lw=0.5)  # Add a vertical line at x=0
-plt.axhline(0.5, color='gray', lw=0.5)  # Add a horizontal line at y=0.5
-plt.xlabel('z')
-plt.ylabel('sigmoid(z)')
-plt.title('Sigmoid Function')
-plt.legend()
-plt.grid(True)
 plt.show()

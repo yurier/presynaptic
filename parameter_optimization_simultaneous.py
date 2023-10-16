@@ -97,7 +97,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
 
 # Objective function for optimization with averaging for all datasets
 def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter=100):
-    tau_D, tau_R, h, tau_refR = params  # Include h and tau_refR in parameters
+    tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
     total_mse = 0  # Variable to store the total MSE for all datasets
     
     # Loop over all datasets
@@ -129,20 +129,20 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
 # Setting the parameters for the simulation
 D0 = 25
 R0 = 30
-tau_D = 5  
-tau_R = 45  
-tau_refR = 10
-s = 0.5
-h = 3.0
-decay_rate = 2 
+tau_D = 2.68104323e+01#2.60381944e+01#2.51406722e+01  
+tau_R = 2.02212386e+01#2.01812934e+01#1.97873162e+01  
+tau_refR = 2.24039034e+01#2.22210394e+01#2.17659560e+01
+s = 7.96026828e-01#7.90609246e-01#0.8
+h = 5.26144961e+00#5.26474562e+00#6.08386430e+00
+decay_rate = 4
 jump_size = 1
-dt = 0.3
+dt = 0.05
 max_attempts = 300
-quiet_duration = 100
+quiet_duration = 50
 
 # Parameter for Ca_jump adaptation
-tau_adap = 0.1  
-delta = 0.04  
+tau_adap = 5.24849781e-02#5.24280854e-02#5.12249414e-02 
+delta = 2.09973392e-02#2.09796610e-02#1.98393158e-02
 
 # Load your CSV files
 folder_path = "dataset-Fernandez-Alfonso-2008/preprocessed"
@@ -178,7 +178,7 @@ mse_values_callback = []
 
 # Callback function to execute at each iteration
 def callback(params, all_observed_data, all_observed_time, all_frequencies):
-    tau_D, tau_R, h, tau_refR = params  # Include h and tau_refR in parameters
+    tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
     avg_freq = sum(all_frequencies) / len(all_frequencies)
     release_rate = avg_freq
     n_rows=5
@@ -230,7 +230,7 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
 # Show the window and run the Qt event loop
 main_window.show()
 # Initial parameters
-initial_params = [tau_D, tau_R, h, tau_refR]  
+initial_params = [tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta]
 
 # Load all datasets into lists
 all_observed_data = []
@@ -247,6 +247,5 @@ result = minimize(
     args=(all_observed_data, all_observed_time, jump_size, frequencies, max_attempts, quiet_duration),
     method='Nelder-Mead',
     callback=lambda params: callback(params, all_observed_data, all_observed_time, frequencies),
-    options={'disp': True, 'maxiter': 100, 'maxfev': 200}
+    options={'disp': True, 'maxiter': 100, 'maxfev': 300}
 )
-
