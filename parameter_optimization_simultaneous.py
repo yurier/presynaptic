@@ -35,7 +35,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
     # Initializing lists to store simulation results
     times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = [0], [R], [D], [Ca_pre], [Ca_jump], [0], []
 
-    t, release_attempts, in_quiet_period, quiet_timer = 0, 0, False, 0  
+    t, release_attempts, in_quiet_period, quiet_timer, idx_dt = 0, 0, False, 0, 0  # Additional initializations
 
     # Main simulation loop to process each time step
     while t < T + quiet_duration:
@@ -71,7 +71,8 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
             elif rand_event < transition_RD + transition_DR + replenish_R and R < R0: R += 1
 
             # Updating time and storing simulation results
-            t += dt
+            idx_dt += 1
+            t = idx_dt*dt
             times.extend([t])
             reserve_values.extend([R])
             docked_values.extend([D])
@@ -108,7 +109,7 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
         for _ in range(n_iter):
             times, reserve_values, docked_values, _, _, _, _ = vesicle_release_with_decay(
                 D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, s, h, decay_rate, jump_size, T, dt, freq, max_attempts, quiet_duration)
-            simulated_data = (D0 - np.array(docked_values))/(D0)
+            simulated_data = (D0+R0 - np.array(docked_values) - np.array(reserve_values))/(D0+R0)
             simulated_data_aligned = []
             for t in observed_time:
                 closest_time = min(times, key=lambda x: abs(x-t))
@@ -189,7 +190,7 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
         times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
             D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, s, h, decay_rate, jump_size, T, dt, freq, max_attempts, quiet_duration)
 
-        simulated_data = (D0 - np.array(docked_values)) / (D0)
+        simulated_data = (D0+R0 - np.array(docked_values) - np.array(reserve_values)) / (D0)
         simulated_data_aligned = []
         for t in observed_time:
             closest_time = min(times, key=lambda x: abs(x - t))
@@ -249,3 +250,6 @@ result = minimize(
     callback=lambda params: callback(params, all_observed_data, all_observed_time, frequencies),
     options={'disp': True, 'maxiter': 100, 'maxfev': 300}
 )
+
+
+

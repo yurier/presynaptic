@@ -59,24 +59,24 @@ Where \(s\) (given as 2) determines the slope of the sigmoid.
 ### 7. Modelling idea for Fernandez dataset
 
 * Idea:
-![TikZ Diagram](figures/scheme0.pdf)
+![TikZ Diagram](figures/scheme0.png)
 
 * Model sketch:
-![TikZ Diagram](figures/scheme1.pdf)
+![TikZ Diagram](figures/scheme1.png)
 
 * Data:
-![TikZ Diagram](figures/scheme2.pdf)
+![TikZ Diagram](figures/scheme2.png)
 Using the spH fluorescence Fernandez estimated the reacidification/alkalinization of the vesicles.
 
 * Approximation:
-![TikZ Diagram](figures/scheme4.pdf)
+![TikZ Diagram](figures/scheme4.png)
 Taking V=R+D, the total number of vesicles, we can say that the change in the vesicles is given by:
  $$V(t)' = b(t,0 \le R < R_o)-a(t,Ca^{2+},D>0)$$
 
 We do not know how the alkalinization/reacification rates are related to the exocytosis/endocytosis ones, this can at least limited by data coming from measurements in the epsps or imaging studies. Since the alkalinization is related to the accumulation of the spH on the membrane, we could also include a 3rd state counting the empty vesicles (fused with the membrane and not yet reacidified). For simplification we can use as objective function to fit Fernandez a normalized emptyness $1-V/V_0$, since the maximum of fluorescence is given by 1 when no reacification is allowed and 0 when both R and D pools are in full capacity.
 
 * Alternative
-![TikZ Diagram](figures/triangle_.pdf)
+![TikZ Diagram](figures/triangle_.png)
 
 
 
