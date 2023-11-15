@@ -4,7 +4,7 @@ This model simulates the dynamics of vesicle release in a synapse based on two p
 
 ## Model Overview
 
-![Figure](/output.png)
+![Figure](figures/output.png)
 
 ## Simulation Details
 
@@ -44,7 +44,7 @@ The simulation uses a combination of Gillespie's algorithm and Euler's method fo
 
 The concentration $Ca_{pre}$ decays exponentially and has synchronous jumps based on a certain release rate:
 
-$$ Ca_{pre}(t+dt) = Ca_{pre}(t) \cdot e^{-\mbox{decay rate} \cdot dt} $$
+$$ Ca_{pre}(t+dt) = Ca_{pre}(t) \cdot e^{-\text{decay rate} \cdot dt} $$
 
 With jumps at regular intervals determined by the release rate.
 
@@ -59,24 +59,29 @@ Where \(s\) (given as 2) determines the slope of the sigmoid.
 ### 7. Modelling idea for Fernandez dataset
 
 * Idea:
-![TikZ Diagram](figures/scheme0.png)
+
+![Idea](figures/scheme0_.png)
 
 * Model sketch:
-![TikZ Diagram](figures/scheme1.png)
+
+![Model sketch](figures/scheme1_.png)
 
 * Data:
-![TikZ Diagram](figures/scheme2.png)
+  
+![Data](figures/scheme2_.png)
+
 Using the spH fluorescence Fernandez estimated the reacidification/alkalinization of the vesicles.
 
 * Approximation:
-![TikZ Diagram](figures/scheme4.png)
+![Approximation](figures/scheme4_.png)
+
 Taking V=R+D, the total number of vesicles, we can say that the change in the vesicles is given by:
  $$V(t)' = b(t,0 \le R < R_o)-a(t,Ca^{2+},D>0)$$
 
 We do not know how the alkalinization/reacification rates are related to the exocytosis/endocytosis ones, this can at least limited by data coming from measurements in the epsps or imaging studies. Since the alkalinization is related to the accumulation of the spH on the membrane, we could also include a 3rd state counting the empty vesicles (fused with the membrane and not yet reacidified). For simplification we can use as objective function to fit Fernandez a normalized emptyness $1-V/V_0$, since the maximum of fluorescence is given by 1 when no reacification is allowed and 0 when both R and D pools are in full capacity.
 
 * Alternative
-![TikZ Diagram](figures/triangle_.png)
+![Alternative](figures/triangle_.png)
 
 
 

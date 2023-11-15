@@ -38,7 +38,6 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
         # If we've reached the next pre_times
         if pre_time_index < len(pre_times) and t >= pre_times[pre_time_index]:
             pre_time_index += 1
-
             # Check for release at this exact moment
             if not in_quiet_period and release_attempts <= max_attempts:
                 release_attempts += 1
@@ -97,19 +96,22 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
 # Parameters
 D0 = 25                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
-tau_adap = 5.36337317e-02             # Time constant for calcium adaptation
-delta = 2.20954120e-02                # Strength of calcium jump due to AP
-tau_D = 3.12883049e+01                # Time constant for vesicle transition from reserve to docked
-tau_R = 1.58603292e+01                # Time constant for vesicle transition from docked to reserve
-tau_refR = 1.89092587e+01             # Time constant for vesicle replenishment to reserve pool
-h = 6.62098313e+00                    # Half-activation calcium concentration for release
-s = 5.52438840e-01                    # Steepness of the release sigmoidal relation
-decay_rate = 5.28309299e+00           # Rate of calcium decay
+tau_adap = 5.25686085e-02             # Time constant for calcium adaptation
+delta = 2.63467268e-02                # Strength of calcium jump due to AP
+tau_D = 3.22059588e+01                # Time constant for vesicle transition from reserve to docked
+tau_R = 1.82230449e+01                # Time constant for vesicle transition from docked to reserve
+tau_refR = 1.31264672e+01             # Time constant for vesicle replenishment to reserve pool
+h = 7.89550730e+00                    # Half-activation calcium concentration for release
+s = 3.46225756e-01                    # Steepness of the release sigmoidal relation
+decay_rate = 6.48332889e+00           # Rate of calcium decay
 jump_size = 1.0                       # Magnitude of calcium jumps
 dt = 0.01                             # Time step
-release_rate = 2.                    # Probability of release per time step (used for Poisson approximation)
+release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
 max_attempts = 300                    # Max release attempts before quiet period
-quiet_duration = 100             # Duration of quiet period
+quiet_duration = 100                  # Duration of quiet period
+
+#last optimization [3.22059588e+01 1.82230449e+01 1.31264672e+01 3.46225756e-01 7.89550730e+00 6.48332889e+00 5.25686085e-02 2.63467268e-02]
+# initial_params = [tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta]
 
 # Time array to represent when pre-synaptic spikes occur
 T_end = (max_attempts/release_rate)  # Total time of simulation
