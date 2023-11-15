@@ -92,9 +92,15 @@ We do not know how the alkalinization/reacification rates are related to the exo
 3. Run the provided Python script to generate simulation results.
 
 ## TODO
-- [ ] Make it neuron? (maybe too complicated, but useful if we want to scale it easily)
-- [ ] Fit to data (The Kinetics of Synaptic Vesicle Pool Depletion at CNS Synaptic Terminals)
-![Figure](/Fernandez-Alfonso-2008_dataset.png)
+- [ ] Make it NEURON? (maybe too complicated, but useful if we want to scale it easily)
+- [X] Fit to data from Fernandez Alfonso 2008 (25 C)
+- ![Figure](figures/Fernandez_Alfonso_2008_simulation_25C.png)
+
+- [ ] Fit to data from Fernandez Alfonso 2008 (35 C)
+
+## DATASETS
+Fernandez Alfonso 2008 data (25 C)
+![Figure](figures/Fernandez_Alfonso_2008_dataset_25C.png)
  
 ## Some papers
 
