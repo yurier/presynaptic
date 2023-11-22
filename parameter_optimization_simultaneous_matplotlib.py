@@ -153,7 +153,7 @@ quiet_duration = 50.                  # Duration of quiet period
 #last optimization [3.22059588e+01 1.82230449e+01 1.31264672e+01 3.46225756e-01 7.89550730e+00 6.48332889e+00 5.25686085e-02 2.63467268e-02]
 
 # Load your CSV files
-folder_path = "dataset-Fernandez-Alfonso-2008/preprocessed"
+folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed"
 csv_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
 labels = ["2 Hz", "5 Hz", "10 Hz", "20 Hz", "30 Hz"]
 frequencies = [int(label.split(' ')[0]) for label in labels]

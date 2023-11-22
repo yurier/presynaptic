@@ -69,8 +69,8 @@ def normalize_data(df):
 
 
 # Path to the directory containing the CSV files
-folder_path = "dataset-Fernandez-Alfonso-2008"
-
+folder_path = "dataset-Fernandez-Alfonso-2008-35C"
+labels = ['10', '2', '20', '30', '5'] # weird because of the way the sorting outcome was ... very weird
 # Get a list of all CSV files in the specified directory
 csv_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
 
@@ -123,3 +123,7 @@ for i, (original_df, preprocessed_df, label) in enumerate(zip(original_data, pre
 
 plt.tight_layout()
 plt.show()
+
+
+
+
