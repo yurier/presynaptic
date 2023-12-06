@@ -29,7 +29,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
     # Initializing vesicle counts, calcium concentration, and Ca_jump
     R, D, Ca_pre, Ca_jump = R0, D0, 0, 1  
 
-    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = [0], [R], [D], [Ca_pre], [Ca_jump], [0], []
+    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = [0], [R], [D], [Ca_pre], [Ca_jump], [0], [], []
 
     t, release_attempts, in_quiet_period, quiet_timer, idx_dt, pre_time_index = 0, 0, False, 0, 0, 0  
     max_iterations = int((T_end + quiet_duration)/dt)
@@ -43,7 +43,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
             break
 
         # If we've reached the next pre_times
-        if pre_time_index < len(pre_times) and t >= pre_times[pre_time_index]:
+        if pre_time_index < len(pre_times) and np.round(t,10) >= np.round(pre_times[pre_time_index],10):
             pre_time_index += 1
 
             # Check for release at this exact moment
@@ -51,6 +51,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
                 release_attempts += 1
                 Ca_pre += jump_size * Ca_jump
                 rand = np.random.rand()
+                spike_times.append(t)
                 if rand < (sigmoid(Ca_pre, s, h)):
                     if D > 0:
                         D -= 1
@@ -98,7 +99,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
         Ca_jump_values.extend([Ca_jump])
         Sigmoid_proba.extend([sigmoid(Ca_pre, s, h)])
 
-    return times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba,release_times
+    return times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times
 
 # Objective function for optimization with averaging for all datasets
 def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter=5):
@@ -111,9 +112,12 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
         pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
 
         mse_values = []  # List to store 
+
+        N = np.round(1/(release_rate*target_dt))
+        dt = 1/(N*release_rate)  # adapt the dt to the frequency of the spike train
         
         for _ in range(n_iter):
-            times, reserve_values, docked_values, _, _, _, _ = vesicle_release_with_decay(
+            times, reserve_values, docked_values, _, _, _, _, _ = vesicle_release_with_decay(
                 D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
             simulated_data = (D0+R0 - np.array(docked_values) - np.array(reserve_values))/(D0+R0)
             simulated_data_aligned = []
@@ -145,7 +149,7 @@ h = 7.89550730e+00                    # Half-activation calcium concentration fo
 s = 3.46225756e-01                    # Steepness of the release sigmoidal relation
 decay_rate = 6.48332889e+00           # Rate of calcium decay
 jump_size = 1.0                       # Magnitude of calcium jumps
-dt = 0.01                             # Time step
+target_dt = 0.01                      # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
 max_attempts = 300                    # Max release attempts before quiet period
 quiet_duration = 50.                  # Duration of quiet period
@@ -177,8 +181,11 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
         T_end = (max_attempts/release_rate)  # Total time of simulation
         pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
 
-        times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
-            D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
+        N = np.round(1/(release_rate*target_dt))
+        dt = 1/(N*release_rate)  # adapt the dt to the frequency of the spike train
+        # print(f"freq: {release_rate}Hz, N: {N}, dt: {dt}")  # check dt values
+        times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
+            D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
 
         simulated_data = (D0+R0 - np.array(docked_values) - np.array(reserve_values)) / (D0+R0)
         simulated_data_aligned = []
@@ -201,9 +208,12 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
                 # plot reserve, docked and release times
                 plt.plot(times, reserve_values, 'g', label="Reserve Values")
                 plt.plot(times, docked_values, 'y', label="Docked Values")
-                plt.scatter(release_times, [0] * len(release_times), c='r', label="Release Times")
-                plt.legend()
-                plt.legend()
+                plt.scatter(release_times, [0] * len(release_times), c='r', label="Release Times", s=5)
+                plt.scatter(spike_times, [2] * len(spike_times), c='C2', label="Spike train", s=5)
+                spike_times_exact = np.arange(0, T_end, 1/release_rate)
+                plt.scatter(spike_times_exact, [2 for _ in spike_times], marker="+", color="k", alpha=0.5, label="Spike train, exact", s=5)
+                # plt.legend()
+                # plt.legend()
             elif row == 2:
                 # plot Ca_pre_values
                 plt.plot(times, Ca_pre_values, 'c', label="Ca_pre Values")
@@ -217,7 +227,8 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
                 # plot mse_values_callback
                 plt.plot(range(len(mse_values_callback)), mse_values_callback, 'b', label="MSE Values Callback")
                 plt.legend()
-
+            if row < n_rows - 1:
+                axes[row][idx].sharex(axes[0][idx])  # share time axis for each frequency
     plt.tight_layout()
     plt.draw()
     plt.pause(0.1)

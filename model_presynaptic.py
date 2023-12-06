@@ -22,7 +22,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
     # Initializing vesicle counts, calcium concentration, and Ca_jump
     R, D, Ca_pre, Ca_jump = R0, D0, 0, 1  
 
-    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = [0], [R], [D], [Ca_pre], [Ca_jump], [0], []
+    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = [0], [R], [D], [Ca_pre], [Ca_jump], [0], [], []
 
     t, release_attempts, in_quiet_period, quiet_timer, idx_dt, pre_time_index = 0, 0, False, 0, 0, 0  
     max_iterations = int((T_end + quiet_duration)/dt)
@@ -43,6 +43,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
                 release_attempts += 1
                 Ca_pre += jump_size * Ca_jump
                 rand = np.random.rand()
+                spike_times.append(t)
                 if rand < (sigmoid(Ca_pre, s, h)):
                     if D > 0:
                         D -= 1
@@ -90,7 +91,7 @@ def vesicle_release_with_decay(D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, 
         Ca_jump_values.extend([Ca_jump])
         Sigmoid_proba.extend([sigmoid(Ca_pre, s, h)])
 
-    return times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba,release_times
+    return times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba,release_times, spike_times
 
 
 # Parameters
@@ -105,8 +106,8 @@ h = 7.89550730e+00                    # Half-activation calcium concentration fo
 s = 3.46225756e-01                    # Steepness of the release sigmoidal relation
 decay_rate = 6.48332889e+00           # Rate of calcium decay
 jump_size = 1.0                       # Magnitude of calcium jumps
-dt = 0.01                             # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
+dt = 1/(3*release_rate)               # Time step
 max_attempts = 300                    # Max release attempts before quiet period
 quiet_duration = 100                  # Duration of quiet period
 
@@ -119,7 +120,7 @@ pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoi
 
 
 # Run Simulation
-times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
+times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
     D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
 
 # Plot Results
@@ -146,9 +147,14 @@ plt.legend()
 
 plt.subplot(4,1,4)
 plt.scatter(release_times, [1 for _ in release_times],color='red', label="Release Events")
+plt.scatter(spike_times, [0.98 for _ in spike_times], color='C2', label="Spike train")
+spike_times_exact = np.arange(0, T_end, 1/release_rate)
+plt.scatter(spike_times_exact, [0.98 for _ in spike_times], marker="+", color="k", alpha=0.5, label="Spike train, exact")
 plt.xlim([0, T_end])
+plt.ylim([0.95, 1.05])
+plt.yticks([])
 plt.xlabel("Time")
-plt.ylabel("Release Events")
+# plt.ylabel("Release Events")
 plt.legend()
 
 plt.tight_layout()
@@ -161,7 +167,7 @@ for release_rate in [2, 5, 10, 20, 30]:
     # Time array to represent when pre-synaptic spikes occur
     T_end = (max_attempts/release_rate)  # Total time of simulation
     pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
-    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times = vesicle_release_with_decay(
+    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
     D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
     plt.step(times, 1-docked_values/np.max(docked_values), where='post', label=f"Docked Pool (D) with release rate {release_rate}")
     plt.xlabel('Time')
