@@ -111,7 +111,8 @@ dt = 1/(3*release_rate)               # Time step
 max_attempts = 300                    # Max release attempts before quiet period
 quiet_duration = 100                  # Duration of quiet period
 
-#last optimization [3.22059588e+01 1.82230449e+01 1.31264672e+01 3.46225756e-01 7.89550730e+00 6.48332889e+00 5.25686085e-02 2.63467268e-02]
+#35C last optimization [2.90618671e+01 2.14234627e+01 1.07153591e+01 3.86677658e-01 1.28958937e+01 5.56455939e+00 4.88660881e-02 1.60012874e-02]
+#25C last optimization [3.22059588e+01 1.82230449e+01 1.31264672e+01 3.46225756e-01 7.89550730e+00 6.48332889e+00 5.25686085e-02 2.63467268e-02]
 # initial_params = [tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta]
 
 # Time array to represent when pre-synaptic spikes occur

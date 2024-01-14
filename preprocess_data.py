@@ -70,9 +70,13 @@ def normalize_data(df):
 
 # Path to the directory containing the CSV files
 folder_path = "dataset-Fernandez-Alfonso-2008-35C"
-labels = ['10', '2', '20', '30', '5'] # weird because of the way the sorting outcome was ... very weird
+labels = ['2', '5', '10', '20', '30'] # weird because of the way the sorting outcome was ... very weird
+
 # Get a list of all CSV files in the specified directory
-csv_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
+csv_files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')]
+
+# Sort the CSV files based on the order of labels
+csv_files = sorted(csv_files, key=lambda x: labels.index(os.path.basename(x).split('.')[0]))
 
 # Create a directory to store the preprocessed data
 output_directory = os.path.join(folder_path, "preprocessed")
@@ -104,6 +108,7 @@ plt.figure(figsize=(15, 5 * num_files))
 
 for i, (original_df, preprocessed_df, label) in enumerate(zip(original_data, preprocessed_data, labels)):
     # Original Data
+    print(label)
     plt.subplot(num_files, 2, i*2 + 1)
     plt.plot(original_df['time'], original_df['deltaF spH'], label=f"Original {label}")
     plt.xlabel('Time')
