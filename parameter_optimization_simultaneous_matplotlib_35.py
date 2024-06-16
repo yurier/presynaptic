@@ -4,6 +4,7 @@ import os
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 import time
+from natsort import natsorted
 
 
 
@@ -140,14 +141,14 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
 # Parameters
 D0 = 25                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
-tau_adap = 0.04827813                 # Time constant for calcium adaptation
-delta = 0.02530705                    # Strength of calcium jump due to AP
+tau_adap = 5.25686085e-02             # Time constant for calcium adaptation
+delta = 2.63467268e-02                # Strength of calcium jump due to AP
 tau_D = 3.22059588e+01                # Time constant for vesicle transition from reserve to docked
 tau_R = 1.82230449e+01                # Time constant for vesicle transition from docked to reserve
 tau_refR = 1.31264672e+01             # Time constant for vesicle replenishment to reserve pool
-h = 8.87689337                        # Half-activation calcium concentration for release
+h = 7.89550730e+00                    # Half-activation calcium concentration for release
 s = 3.46225756e-01                    # Steepness of the release sigmoidal relation
-decay_rate = 6.8425866                # Rate of calcium decay
+decay_rate = 6.48332889e+00           # Rate of calcium decay
 jump_size = 1.0                       # Magnitude of calcium jumps
 target_dt = 0.01                      # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
@@ -159,20 +160,11 @@ quiet_duration = 50.                  # Duration of quiet period
 # [8.87689337 6.8425866  0.04827813 0.02530705]
 # [14.49339161  6.66258995  0.04633688  0.0155243 ]
 #initial_params = [h, decay_rate, tau_adap, delta]
-
+#[15.03951095  3.94897234  0.03338386  0.02320379]
 # Load your CSV files
 folder_path = "dataset-Fernandez-Alfonso-2008-35C/preprocessed"
-csv_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
+csv_files = natsorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
 labels = ["2 Hz", "5 Hz", "10 Hz", "20 Hz", "30 Hz"]
-
-# Function to extract the numeric part from a string
-def extract_numeric_part(s):
-    return int(''.join(filter(str.isdigit, s)))
-
-# Sort the CSV files based on the order of labels
-csv_files = sorted(csv_files, key=lambda x: extract_numeric_part(os.path.splitext(os.path.basename(x))[0]))
-
-
 frequencies = [int(label.split(' ')[0]) for label in labels]
 
 # Global variable to store MSE values
