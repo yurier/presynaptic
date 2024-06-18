@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import time
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor
-
+import pyautogui
 
 # Defining the sigmoid function used for vesicle release probability
 def sigmoid(z, s , h ):
@@ -110,7 +110,7 @@ def run_simulation(args):
     return vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
 
 # Objective function for optimization with averaging for all datasets
-def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter=10):
+def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter = 15):
     tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
     total_mse = 0  # Variable to store the total MSE for all datasets
 
