@@ -285,7 +285,7 @@ fig_height = screen_height / 100
 plt.figure(figsize=(fig_width, fig_height))
 axes = [[plt.subplot(6, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(6)]
 
-bounds = Bounds([0, 0, 0, 2], [np.inf, np.inf, 50])
+bounds = Bounds([0, 0, 0, 2], [np.inf, np.inf, np.inf, 50])
 
 # Call the minimize function once, outside of the loop
 result = minimize(
