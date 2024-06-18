@@ -111,8 +111,8 @@ def run_simulation(args):
     return vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
 
 # Objective function for optimization with averaging for all datasets
-def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter = 5):
-    tau_refR, s, h = params
+def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter = 15):
+    tau_refR, s, h, decay_rate = params
     #tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
     total_mse = 0  # Variable to store the total MSE for all datasets
 
@@ -155,14 +155,14 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
 D0 = 20                               # Initial docked vesicles
 R0 = 40                               # Initial reserve vesicles
 F0 = 0                                # Initial fused vesicles
-tau_adap = 5.33467137e-02             # Time constant for calcium adaptation
+tau_adap = 5e-02                      # Time constant for calcium adaptation
 delta = 2.61851891e-02                # Strength of calcium jump due to AP
 tau_D = 1e+00                         # Time constant for vesicle transition from reserve to docked
 tau_R = 2e+01                         # Time constant for vesicle transition from docked to reserve
 tau_refR = 1.37867453e+01             # Time constant for vesicle replenishment to reserve pool
 h = 7.74988465e+00                    # Half-activation calcium concentration for release
 s = 3.14208720e-01                    # Steepness of the release sigmoidal relation
-decay_rate = 5e-02                    # Rate of calcium decay
+decay_rate = 5e01                     # Rate of calcium decay
 jump_size = 1.0                       # Magnitude of calcium jumps
 target_dt = 0.01                      # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
@@ -171,7 +171,7 @@ quiet_duration = 50.                  # Duration of quiet period
 
 
 #tau_refR, s, h =[ 1.03236289e+02, 4.50089041e-03, 6.14159588e+01]
-tau_refR, s, h =[ 1.05e+01, 1, 10]
+tau_refR, s, h, decay_rate =[ 1.05e+01, 2, .5, 5e01]
 
 #tau_refR, s, h 
 
@@ -187,7 +187,7 @@ mse_values_callback = []
 # Callback function to execute at each iteration
 def callback(params, all_observed_data, all_observed_time, all_frequencies):
     print(f"Callback for iteration {len(mse_values_callback)}")
-    tau_refR, s, h = params
+    tau_refR, s, h, decay_rate = params
     #tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
 
     avg_freq = sum(all_frequencies) / len(all_frequencies)
@@ -263,7 +263,7 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
     plt.pause(0.1)
 
 # Initial parameters
-initial_params = [tau_refR, s, h]
+initial_params = [tau_refR, s, h, decay_rate]
 
 # Load all datasets into lists
 all_observed_data = []
@@ -285,7 +285,7 @@ fig_height = screen_height / 100
 plt.figure(figsize=(fig_width, fig_height))
 axes = [[plt.subplot(6, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(6)]
 
-bounds = Bounds([0, 0, 0], [np.inf, np.inf, np.inf])
+bounds = Bounds([0, 0, 0, 2], [np.inf, np.inf, 50])
 
 # Call the minimize function once, outside of the loop
 result = minimize(
