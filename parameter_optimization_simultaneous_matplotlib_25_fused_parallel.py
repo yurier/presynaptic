@@ -7,6 +7,7 @@ import time
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor
 import pyautogui
+from scipy.optimize import Bounds
 
 # Defining the sigmoid function used for vesicle release probability
 def sigmoid(z, s , h ):
@@ -110,7 +111,7 @@ def run_simulation(args):
     return vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
 
 # Objective function for optimization with averaging for all datasets
-def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter = 15):
+def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter = 5):
     tau_refR, s, h = params
     #tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
     total_mse = 0  # Variable to store the total MSE for all datasets
@@ -142,7 +143,7 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
         avg_mse = np.mean(mse_values)
         return avg_mse
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         mse_results = list(executor.map(process_dataset, zip(all_observed_data, all_observed_time, all_frequencies)))
 
     total_mse = sum(mse_results)
@@ -161,7 +162,7 @@ tau_R = 2e+01                         # Time constant for vesicle transition fro
 tau_refR = 1.37867453e+01             # Time constant for vesicle replenishment to reserve pool
 h = 7.74988465e+00                    # Half-activation calcium concentration for release
 s = 3.14208720e-01                    # Steepness of the release sigmoidal relation
-decay_rate = 5e-01                    # Rate of calcium decay
+decay_rate = 5e-02                    # Rate of calcium decay
 jump_size = 1.0                       # Magnitude of calcium jumps
 target_dt = 0.01                      # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
@@ -169,6 +170,8 @@ max_attempts = 300                    # Max release attempts before quiet period
 quiet_duration = 50.                  # Duration of quiet period
 
 
+#tau_refR, s, h =[ 1.03236289e+02, 4.50089041e-03, 6.14159588e+01]
+tau_refR, s, h =[ 1.05e+01, 1, 10]
 
 #tau_refR, s, h 
 
@@ -189,7 +192,7 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
 
     avg_freq = sum(all_frequencies) / len(all_frequencies)
     release_rate = avg_freq
-    n_rows = 5
+    n_rows = 6
 
     print(params)
 
@@ -246,8 +249,15 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
                 # plot mse_values_callback
                 plt.plot(range(len(mse_values_callback)), mse_values_callback, 'b', label="MSE Values Callback")
                 plt.legend()
-            if row < n_rows - 1:
+            elif row < n_rows - 1:
                 axes[row][idx].sharex(axes[0][idx])  # share time axis for each frequency
+            if row == 5:
+                z = np.linspace(0, 10, 200)
+                y = sigmoid(z, s, h)
+                plt.plot(z, y, label=f'sigmoid(Ca_pre, s={s}, h={h})')
+                plt.xlabel('Ca_pre')
+                plt.ylabel('sigmoid(Ca_pre)')
+                plt.grid(True)
     plt.tight_layout()
     plt.draw()
     plt.pause(0.1)
@@ -273,7 +283,9 @@ fig_height = screen_height / 100
 
 # Create the figure with adjusted size
 plt.figure(figsize=(fig_width, fig_height))
-axes = [[plt.subplot(5, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(5)]
+axes = [[plt.subplot(6, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(6)]
+
+bounds = Bounds([0, 0, 0], [np.inf, np.inf, np.inf])
 
 # Call the minimize function once, outside of the loop
 result = minimize(
@@ -282,6 +294,7 @@ result = minimize(
     args=(all_observed_data, all_observed_time, jump_size, frequencies, max_attempts, quiet_duration),
     method='Nelder-Mead',
     callback=lambda params: callback(params, all_observed_data, all_observed_time, frequencies),
+    bounds=bounds,
     options={'disp': True, 'maxiter': 100, 'maxfev': 300}
 )
 

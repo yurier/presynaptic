@@ -160,7 +160,7 @@ quiet_duration = 50.                  # Duration of quiet period
 
 
 
-tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta =[ 5.51302477e+01 , 2.35148281e+01,  2.45617781e+01, -3.32592197e-02 ,-2.97545032e+00 , 5.41241156e+00 , 8.97984311e-02 , 3.06609787e-02]
+tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = [ 5.51302477e+01 , 2.35148281e+01,  2.45617781e+01, -3.32592197e-02 ,-2.97545032e+00 , 5.41241156e+00 , 8.97984311e-02 , 3.06609787e-02]
 
 
 # Load your CSV files
@@ -262,7 +262,7 @@ fig_height = screen_height / 100
 
 # Create the figure with adjusted size
 plt.figure(figsize=(fig_width, fig_height))
-axes = [[plt.subplot(5, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(5)]
+axes = [[plt.subplot(6, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(5)]
 
 # Call the minimize function once, outside of the loop
 result = minimize(
