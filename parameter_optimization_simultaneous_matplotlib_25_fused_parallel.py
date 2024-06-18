@@ -111,7 +111,8 @@ def run_simulation(args):
 
 # Objective function for optimization with averaging for all datasets
 def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter = 15):
-    tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
+    tau_refR, s, h = params
+    #tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
     total_mse = 0  # Variable to store the total MSE for all datasets
 
     def process_dataset(args):
@@ -155,12 +156,12 @@ R0 = 40                               # Initial reserve vesicles
 F0 = 0                                # Initial fused vesicles
 tau_adap = 5.33467137e-02             # Time constant for calcium adaptation
 delta = 2.61851891e-02                # Strength of calcium jump due to AP
-tau_D = 3.43367950e+01                # Time constant for vesicle transition from reserve to docked
-tau_R = 1.83714814e+01                # Time constant for vesicle transition from docked to reserve
+tau_D = 1e+00                         # Time constant for vesicle transition from reserve to docked
+tau_R = 2e+01                         # Time constant for vesicle transition from docked to reserve
 tau_refR = 1.37867453e+01             # Time constant for vesicle replenishment to reserve pool
 h = 7.74988465e+00                    # Half-activation calcium concentration for release
 s = 3.14208720e-01                    # Steepness of the release sigmoidal relation
-decay_rate = 6.63876860e+00           # Rate of calcium decay
+decay_rate = 5e-01                    # Rate of calcium decay
 jump_size = 1.0                       # Magnitude of calcium jumps
 target_dt = 0.01                      # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
@@ -169,8 +170,7 @@ quiet_duration = 50.                  # Duration of quiet period
 
 
 
-tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta =[ 5.51302477e+01 , 2.35148281e+01,  2.45617781e+01, -3.32592197e-02 ,-2.97545032e+00 , 5.41241156e+00 , 8.97984311e-02 , 3.06609787e-02]
-
+#tau_refR, s, h 
 
 # Load your CSV files
 folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed"
@@ -184,7 +184,9 @@ mse_values_callback = []
 # Callback function to execute at each iteration
 def callback(params, all_observed_data, all_observed_time, all_frequencies):
     print(f"Callback for iteration {len(mse_values_callback)}")
-    tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
+    tau_refR, s, h = params
+    #tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
+
     avg_freq = sum(all_frequencies) / len(all_frequencies)
     release_rate = avg_freq
     n_rows = 5
@@ -238,7 +240,7 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
             elif row == 3:
                 # plot Ca_jump_values and Sigmoid_proba
                 plt.plot(times[1::2], Ca_jump_values[1::2], 'm', label="Ca_jump Values")
-                plt.plot(times[1::2], Sigmoid_proba[1::2], 'w', label="Sigmoid Proba")
+                plt.plot(times[1::2], Sigmoid_proba[1::2], 'b', label="Sigmoid Proba")
                 plt.legend()
             elif row == 4:
                 # plot mse_values_callback
@@ -251,7 +253,7 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
     plt.pause(0.1)
 
 # Initial parameters
-initial_params = [tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta]
+initial_params = [tau_refR, s, h]
 
 # Load all datasets into lists
 all_observed_data = []
