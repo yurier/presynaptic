@@ -69,7 +69,7 @@ def normalize_data(df):
 
 
 # Path to the directory containing the CSV files
-folder_path = "dataset-Fernandez-Alfonso-2008-35C"
+folder_path = "dataset-Fernandez-Alfonso-2008-25C"
 labels = ['2', '5', '10', '20', '30'] # weird because of the way the sorting outcome was ... very weird
 
 # Get a list of all CSV files in the specified directory

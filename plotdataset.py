@@ -4,7 +4,7 @@ import os
 from natsort import natsorted
 
 # Path to the directory containing the CSV files
-folder_path = "dataset-Fernandez-Alfonso-2008-35C/preprocessed/"
+folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed/"
 
 # Get a list of all CSV files in the specified directory
 csv_files = natsorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
@@ -18,6 +18,8 @@ plt.figure(figsize=(12, 8))
 # Loop through each file, read its content, and plot on the same figure
 for file, label in zip(csv_files, labels):
     # Read CSV without headers and assign column names
+    display(file)
+    display(label)
     df = pd.read_csv(file, header=None, names=['time', 'deltaF spH'])
     
     plt.plot(df['time'], df['deltaF spH'], label=label)
