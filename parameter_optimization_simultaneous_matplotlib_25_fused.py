@@ -208,14 +208,14 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
             ax.clear()
             if row == 0:
                 # plot original and simulated data
-                plt.plot(observed_time[1::4], observed_data[1::4], 'b', label=f"Observed Data ({release_rate} Hz)")
-                plt.plot(observed_time[1::4], simulated_data_aligned[1::4], 'r', label=f"Simulated Data ({release_rate} Hz)")
+                plt.plot(observed_time[1::2], observed_data[1::2], 'b', label=f"Observed Data ({release_rate} Hz)")
+                plt.plot(observed_time[1::2], simulated_data_aligned[1::2], 'r', label=f"Simulated Data ({release_rate} Hz)")
                 plt.legend()
             elif row == 1:
                 # plot reserve, docked and release times
-                plt.plot(times[1::4], reserve_values[1::4], 'g', label="Reserve Values")
-                plt.plot(times[1::4], docked_values[1::4], 'y', label="Docked Values")
-                plt.plot(times[1::4], fused_values[1::4], 'y', label="Fused Values")
+                plt.plot(times[1::2], reserve_values[1::2], 'g', label="Reserve Values")
+                plt.plot(times[1::2], docked_values[1::2], 'y', label="Docked Values")
+                plt.plot(times[1::2], fused_values[1::2], 'y', label="Fused Values")
                 plt.scatter(release_times, [0] * len(release_times), c='r', label="Release Times", s=5)
                 plt.scatter(spike_times, [2] * len(spike_times), c='C2', label="Spike train", s=5)
                 spike_times_exact = np.arange(0, T_end, 1/release_rate)
@@ -224,12 +224,12 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
                 # plt.legend()
             elif row == 2:
                 # plot Ca_pre_values
-                plt.plot(times[1::4], Ca_pre_values[1::4], 'c', label="Ca_pre Values")
+                plt.plot(times[1::2], Ca_pre_values[1::2], 'c', label="Ca_pre Values")
                 plt.legend()
             elif row == 3:
                 # plot Ca_jump_values and Sigmoid_proba
-                plt.plot(times[1::4], Ca_jump_values[1::4], 'm', label="Ca_jump Values")
-                plt.plot(times[1::4], Sigmoid_proba[1::4], 'w', label="Sigmoid Proba")
+                plt.plot(times[1::2], Ca_jump_values[1::2], 'm', label="Ca_jump Values")
+                plt.plot(times[1::2], Sigmoid_proba[1::2], 'w', label="Sigmoid Proba")
                 plt.legend()
             elif row == 4:
                 # plot mse_values_callback
