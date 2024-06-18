@@ -253,7 +253,15 @@ for file in csv_files:
     all_observed_time.append(df['time'])
 
 
-plt.figure(figsize=(20, 15))
+# Get screen size using pyautogui
+screen_width, screen_height = pyautogui.size()
+
+# Convert screen size to figure size (in inches, assuming 100 DPI)
+fig_width = screen_width / 100
+fig_height = screen_height / 100
+
+# Create the figure with adjusted size
+plt.figure(figsize=(fig_width, fig_height))
 axes = [[plt.subplot(5, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(5)]
 
 # Call the minimize function once, outside of the loop
