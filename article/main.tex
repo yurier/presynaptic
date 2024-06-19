@@ -42,6 +42,7 @@
 \section*{Model}
 
 
+
 \begin{table}[!ht]
 	\centering
 	\caption{Model parameters.}
@@ -50,7 +51,7 @@
 		\toprule
 		{\bf Symbol} & {\bf Description}                     & {\bf Unit}     & {\bf Experimental litterature}      \\
 		\midrule
-		$R_0$          & Recycling pool capacity                                  & -  & \\
+		$R_0$          & Recycling pool capacity                                  & -  & 	\\
 		$D_0$          & Docked pool capacity                                  & - & 5-20 vesicles per bouton in cultured rat hippocampal  \\
 		&&& neurons \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001} \\
 		\\
@@ -58,7 +59,10 @@
 		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 &  \\
 		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  &  \\
 		\\
-		Calcium stuff\\
+		$\rm [Ca^{2+}]_o$ & Extracellular calcium concentration & mM \\
+		$\tau_{pre}$ &  $\rm [Ca^{2+}]_i$ attenuation recovery rate & s\\
+		$\tau_{rec}$ & Calcium jump recovery rate & s\\
+		$\delta_{\rm Ca}$ &  & \\
 		\bottomrule
 	\end{tabular}
 \end{table}
