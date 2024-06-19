@@ -7,6 +7,9 @@
 \usepackage{fixltx2e} % or subscript
 \usepackage{ragged2e}
 \usepackage{caption}
+
+\usepackage{siunitx}  % for units
+
 \linenumbers
 
 \title{}
@@ -34,6 +37,34 @@
 \thispagestyle{empty}
 
 \section*{Introduction}
+
+
+\section*{Model}
+
+
+\begin{table}[!ht]
+	\centering
+	\caption{Model parameters.}
+	\label{tab:state_vars_wb}
+	\begin{tabular}{@{}lllll@{}}
+		\toprule
+		{\bf Symbol} & {\bf Description}                     & {\bf Unit}     & {\bf Experimental litterature}      \\
+		\midrule
+		$R_0$          & Recycling pool capacity                                  & -  & \\
+		$D_0$          & Docked pool capacity                                  & - & 5-20 vesicles per bouton in cultured rat hippocampal  \\
+		&&& neurons \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001} \\
+		\\
+		$\tau_{R\rightarrow D}$          & Vesicle transition rate from  recycling to docked                                 &  \\
+		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 &  \\
+		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  &  \\
+		\\
+		Calcium stuff\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+
+\bibliography{bibliography}
 
 
 \end{document}

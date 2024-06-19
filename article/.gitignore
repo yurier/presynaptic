@@ -1,3 +1,6 @@
 *.log
 *.aux
 *.out
+*.bbl
+*.blg
+zotero_export.bib
