@@ -12,6 +12,10 @@
 
 \linenumbers
 
+
+
+
+
 \title{}
 
 \author[1,$\dag$]{}
@@ -41,12 +45,54 @@
 
 \section*{Model}
 
+\subsection*{Transitions between the presynaptic vesicle pools}
+
+Three pools of vesicles: 
+\begin{itemize}
+	\item Recycling pool
+	\item Docked pool (i.e. readily releasable pool RRP)
+	\item Fused pool
+\end{itemize}
+
+Calcium-dependent release probability (from docked to fused):
+\begin{equation*}
+	p_{rel} = 
+\end{equation*}
+
+\subsection*{Calcium dynamics}
+\begin{subequations}
+	\label{eq:calcium}
+	\begin{align*}
+		&\frac{{\rm d}Ca_{pre}}{{\rm d}t} = - \frac{Ca_{pre}}{\tau_{pre}}\\
+		&\frac{{\rm d}Ca_{jump}}{{\rm d}t}  = \frac{1-Ca_{jump}}{\tau_{rec}} - \delta_{Ca} \cdot Ca_{jump} \cdot Ca_{pre}\\
+		&Ca_{pre} \leftarrow Ca_{pre} + Ca_{jump} \text{ upon spike arrival}
+	\end{align*}
+\end{subequations}
+
+
+
+\begin{table}[!ht]
+	\centering
+	\caption{Model variables.}
+	\label{tab:model_vars}
+	\begin{tabular}{@{}llll@{}}
+		\toprule
+		{\bf Symbol} & {\bf Description}                     & {\bf Unit}         \\
+		\midrule
+		$R$          & Number of vesicles in the recycling pool                                  & - 	\\
+		$D$          & Number of docked vesicles                                & - 	\\
+		$F$          & Number of fused vesicles                  & - 	\\
+		$Ca_{pre}$          & Intracellular presynaptic calcium concentration                & mM 	\\
+		$Ca_{jump}$          & Jump in   $Ca_{pre}$ upon spike arrival             & mM 	\\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
 
 \begin{table}[!ht]
 	\centering
 	\caption{Model parameters.}
-	\label{tab:state_vars_wb}
+	\label{tab:model_params}
 	\begin{tabular}{@{}lllll@{}}
 		\toprule
 		{\bf Symbol} & {\bf Description}                     & {\bf Unit}     & {\bf Experimental litterature}      \\
@@ -59,15 +105,17 @@
 		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 &  \\
 		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  &  \\
 		\\
-		$\rm [Ca^{2+}]_o$ & Extracellular calcium concentration & mM \\
-		$\tau_{pre}$ &  $\rm [Ca^{2+}]_i$ attenuation recovery rate & s\\
+%		$\rm [Ca^{2+}]_o$ & Extracellular calcium concentration & mM \\
+		$\tau_{pre}$ &  $Ca_{pre}$ attenuation recovery rate & s\\
 		$\tau_{rec}$ & Calcium jump recovery rate & s\\
 		$\delta_{\rm Ca}$ &  & \\
+		\\
+		Sigmoid parameters\\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
-
+\newpage
 \bibliography{bibliography}
 
 
