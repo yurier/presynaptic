@@ -10,10 +10,15 @@ import pyautogui
 from scipy.optimize import Bounds
 
 # Defining the sigmoid function used for vesicle release probability
-def sigmoid(z, s, h):
-    return 1 / (1 + np.exp(-s * (z - h)))
+def sigmoid(Ca_pre, s, sigmoid_ext_Ca):
+    return Ca_pre**s / (Ca_pre**s + sigmoid_ext_Ca**s)
 
-def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times):
+# Defining the sigmoid function used for vesicle release probability
+def sigmoid_ext_Ca(Ca_o):
+    return 0.654 + 1.3 / (1 + np.exp(4*(Ca_o - 1.8)))
+
+
+def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, Ca_o, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times):
     """
     This function simulates the vesicle release with decay.
     Parameters:
@@ -51,7 +56,7 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
     fused_values[0] = F
     Ca_pre_values[0] = Ca_pre
     Ca_jump_values[0] = Ca_jump
-    Sigmoid_proba[0] = sigmoid(Ca_pre, s, h)
+    Sigmoid_proba[0] = sigmoid(Ca_pre, s, Ca_o)
 
     t, release_attempts, in_quiet_period, quiet_timer, idx_dt, pre_time_index = 0, 0, False, 0, 0, 0  
 
@@ -121,7 +126,7 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
         fused_values[iteration] = F
         Ca_pre_values[iteration] = Ca_pre
         Ca_jump_values[iteration] = Ca_jump
-        Sigmoid_proba[iteration] = sigmoid(Ca_pre, s, h)
+        Sigmoid_proba[iteration] = sigmoid(Ca_pre, s, Ca_o)
 
     # Trimming arrays to actual size
     times = times[:iteration]
@@ -136,12 +141,12 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
 
 # Function to run a single instance of the simulation
 def run_simulation(args):
-    D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times = args
-    return vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
+    D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, Ca_o, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times = args
+    return vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, Ca_o, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
 
 # Objective function for optimization with averaging for all datasets
-def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter=30):
-    tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
+def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter=50):
+    D0, R0, tau_D, tau_R, tau_refR, decay_rate, tau_adap, delta = params
     total_mse = 0  # Variable to store the total MSE for all datasets
 
     def process_dataset(args):
@@ -153,7 +158,7 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
         dt = 1 / (N * release_rate)  # adapt the dt to the frequency of the spike train
 
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(run_simulation, (D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)) for _ in range(n_iter)]
+            futures = [executor.submit(run_simulation, (D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, Ca_o, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)) for _ in range(n_iter)]
             results = [future.result() for future in futures]
 
         for times, reserve_values, docked_values, fused_values, _, _, _, _, _ in results:
@@ -177,25 +182,26 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
     mse_values_callback.append(total_mse)
     return total_mse
 
-# Parameters
-D0 = 20                               # Initial docked vesicles
+# Parameters to optimize
+D0 = 15                               # Initial docked vesicles
 R0 = 40                               # Initial reserve vesicles
-F0 = 0                                # Initial fused vesicles
+tau_D = 2.54447635e+00                # Time constant for vesicle transition from reserve to docked
+tau_R = 6.51846232e+00                # Time constant for vesicle transition from docked to reserve
+tau_refR = 5.75258143e+01             # Time constant for vesicle replenishment to reserve pool
+decay_rate = 5                        # Rate of calcium decay
 tau_adap = 5e-02                      # Time constant for calcium adaptation
 delta = 2.61851891e-02                # Strength of calcium jump due to AP
-tau_D = 1e+00                         # Time constant for vesicle transition from reserve to docked
-tau_R = 2e+01                         # Time constant for vesicle transition from docked to reserve
-tau_refR = 1.37867453e+01             # Time constant for vesicle replenishment to reserve pool
-h = 7.74988465e+00                    # Half-activation calcium concentration for release
-s = 3.e-01                            # Steepness of the release sigmoidal relation
-decay_rate = 5e01                     # Rate of calcium decay
+
+# Parameters fixed
+F0 = 0                                # Initial fused vesicles
 jump_size = 1.0                       # Magnitude of calcium jumps
 target_dt = 0.01                      # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
 max_attempts = 300                    # Max release attempts before quiet period
 quiet_duration = 50.                  # Duration of quiet period
+Ca_o = 2                              # External calcium, half-activation calcium concentration (mM) for release, 
+s = 2                                 # Steepness of the release sigmoidal relation
 
-tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta= [1e+00, 2e+01, 10.65535983,  2.0691054,   0.49919725, 40, 5e-02, 2.61851891e-02]
 
 # Load your CSV files
 folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed"
@@ -206,14 +212,18 @@ frequencies = [int(label.split(' ')[0]) for label in labels]
 # Global variable to store MSE values
 mse_values_callback = []
 
-# Callback function to execute at each iteration
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 def callback(params, all_observed_data, all_observed_time, all_frequencies):
     print(f"Callback for iteration {len(mse_values_callback)}")
-    tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta = params
+    D0, R0, tau_D, tau_R, tau_refR, decay_rate, tau_adap, delta = params
 
     avg_freq = sum(all_frequencies) / len(all_frequencies)
     release_rate = avg_freq
     n_rows = 6
+    num_simulations = 20
 
     print(params)
 
@@ -226,15 +236,25 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
         N = np.round(1 / (release_rate * target_dt))
         dt = 1 / (N * release_rate)  # adapt the dt to the frequency of the spike train
 
-        times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
-            D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
+        all_simulated_data = []
+        
+        for sim in range(num_simulations):
+            times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
+                D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, Ca_o, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
 
-        simulated_data = np.array(fused_values) / (D0 + R0)
-        simulated_data_aligned = []
-        for t in observed_time:
-            closest_index = np.argmin(np.abs(times - t))
-            simulated_data_point = simulated_data[closest_index]
-            simulated_data_aligned.append(simulated_data_point)
+            simulated_data = np.array(fused_values) / (D0 + R0)
+            simulated_data_aligned = []
+            for t in observed_time:
+                closest_index = np.argmin(np.abs(times - t))
+                simulated_data_point = simulated_data[closest_index]
+                simulated_data_aligned.append(simulated_data_point)
+
+            all_simulated_data.append(simulated_data_aligned)
+
+        all_simulated_data = np.array(all_simulated_data)
+        mean_simulated_data = np.mean(all_simulated_data, axis=0)
+        quantile_2nd = np.percentile(all_simulated_data, 25, axis=0)
+        quantile_4th = np.percentile(all_simulated_data, 75, axis=0)
 
         for row in range(n_rows):
             ax = axes[row][idx]
@@ -242,9 +262,16 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
             ax.clear()
             if row == 0:
                 # plot original and simulated data
-                plt.plot(observed_time[1::2], observed_data[1::2], 'b', label=f"Observed Data ({release_rate} Hz)")
-                plt.plot(observed_time[1::2], simulated_data_aligned[1::2], 'r', label=f"Simulated Data ({release_rate} Hz)")
-                plt.legend()
+                observed_time_numeric = np.array(observed_time[1::2], dtype=float)
+                observed_data_numeric = np.array(observed_data[1::2], dtype=float)
+                mean_simulated_data_numeric = np.array(mean_simulated_data[1::2], dtype=float)
+                quantile_2nd_numeric = np.array(quantile_2nd[1::2], dtype=float)
+                quantile_4th_numeric = np.array(quantile_4th[1::2], dtype=float)
+
+                plt.plot(observed_time_numeric, observed_data_numeric, 'b', label=f"Observed Data ({release_rate} Hz)")
+                plt.plot(observed_time_numeric, mean_simulated_data_numeric, 'r', label=f"Mean Simulated Data ({release_rate} Hz)")
+                plt.fill_between(observed_time_numeric, quantile_2nd_numeric, quantile_4th_numeric, color='gray', alpha=0.5, label="2nd to 3rd Quantile Range")
+                plt.legend(fontsize='small', markerscale=0.5)
             elif row == 1:
                 # plot reserve, docked and release times
                 plt.plot(times[1::2], reserve_values[1::2], 'g', label="Reserve Values")
@@ -271,8 +298,8 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
                 axes[row][idx].sharex(axes[0][idx])  # share time axis for each frequency
             if row == 5:
                 z = np.linspace(0, 10, 200)
-                y = sigmoid(z, s, h)
-                plt.plot(z, y, label=f'sigmoid(Ca_pre, s={s}, h={h})')
+                y = sigmoid(z, s, Ca_o)
+                plt.plot(z, y, label=f'sigmoid(Ca_pre, s={s}, Ca_o={Ca_o})')
                 plt.xlabel('Ca_pre')
                 plt.ylabel('sigmoid(Ca_pre)')
                 plt.grid(True)
@@ -280,8 +307,11 @@ def callback(params, all_observed_data, all_observed_time, all_frequencies):
     plt.draw()
     plt.pause(0.1)
 
+
+
+
 # Initial parameters
-initial_params = [tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta]
+initial_params = [D0, R0, tau_D, tau_R, tau_refR, decay_rate, tau_adap, delta]
 
 # Load all datasets into lists
 all_observed_data = []
@@ -302,7 +332,7 @@ fig_height = screen_height / 100
 plt.figure(figsize=(fig_width, fig_height))
 axes = [[plt.subplot(6, len(frequencies), idx + 1 + row * len(frequencies)) for idx in range(len(frequencies))] for row in range(6)]
 
-bounds = Bounds([0, 0, 0, 0, 0.001, 2, 0, 0], [np.inf, np.inf, np.inf, np.inf, np.inf, 50, np.inf, np.inf])
+bounds = Bounds([5, 15, 0.001, 0.001, 0.001, 2, 0, 0], [20, 60, np.inf, np.inf, np.inf, 50, np.inf, np.inf])
 
 # Call the minimize function once, outside of the loop
 result = minimize(
