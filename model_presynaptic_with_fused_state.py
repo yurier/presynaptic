@@ -1,10 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from natsort import natsorted
+import os
+import pandas as pd
 
-def sigmoid(z, s, h):
-    return 1 / (1 + np.exp(-s*(z-h)))
+# Defining the sigmoid function used for vesicle release probability
+def sigmoid(Ca_pre, s):
+    return 1 / (1 + np.exp(-s*(Ca_pre-8)))
 
-def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times):
+def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times):
     """
     This function simulates the vesicle release with decay.
     Parameters:
@@ -20,22 +24,41 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
         - times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times: Simulation results.
     """
     # Initializing vesicle counts, calcium concentration, and Ca_jump
-    R, D, F, Ca_pre, Ca_jump = R0, D0, F0, 0, 1  
+    R, D, F, Ca_pre, Ca_jump = int(R0), int(D0), F0, 0, 1  
 
-    times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = [0], [R], [D], [F], [Ca_pre], [Ca_jump], [0], [], []
+    max_iterations = int((T_end + quiet_duration) / dt) + 1  # +1 to account for t=0
+
+    # Preallocating arrays
+    times = np.zeros(max_iterations)
+    reserve_values = np.zeros(max_iterations)
+    docked_values = np.zeros(max_iterations)
+    fused_values = np.zeros(max_iterations)
+    Ca_pre_values = np.zeros(max_iterations)
+    Ca_jump_values = np.zeros(max_iterations)
+    Sigmoid_proba = np.zeros(max_iterations)
+    release_times = []
+    spike_times = []
+
+    # Initial values
+    times[0] = 0
+    reserve_values[0] = R
+    docked_values[0] = D
+    fused_values[0] = F
+    Ca_pre_values[0] = Ca_pre
+    Ca_jump_values[0] = Ca_jump
+    Sigmoid_proba[0] = sigmoid(Ca_pre, s)
 
     t, release_attempts, in_quiet_period, quiet_timer, idx_dt, pre_time_index = 0, 0, False, 0, 0, 0  
-    max_iterations = int((T_end + quiet_duration)/dt)
 
     iteration = 0
 
     while t < T_end + quiet_duration:
         iteration += 1
-        if iteration > max_iterations:
+        if iteration >= max_iterations:
             print("Warning: Exceeded maximum iterations. Breaking loop.")
             break
 
-        # If we've reached the next pre_times
+        # If we've reached the next pre_time
         if pre_time_index < len(pre_times) and t >= pre_times[pre_time_index]:
             pre_time_index += 1
             # Check for release at this exact moment
@@ -44,7 +67,7 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
                 Ca_pre += jump_size * Ca_jump
                 rand = np.random.rand()
                 spike_times.append(t)
-                if rand < (sigmoid(Ca_pre, s, h)):
+                if rand < sigmoid(Ca_pre, s):  # Use previously calculated probability
                     if D > 0:
                         D -= 1
                         F += 1
@@ -57,15 +80,15 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
         # Normal simulation dynamics between pre_times
         if in_quiet_period:
             idx_dt += 1
-            quiet_timer = idx_dt*dt
+            quiet_timer = idx_dt * dt
             if quiet_timer >= quiet_duration:
                 in_quiet_period, quiet_timer = False, 0  
 
         # Exponential decay of calcium
-        Ca_pre *= np.exp(-decay_rate * dt)
+        Ca_pre *= np.exp(- dt/decay_rate)
 
         # Update Ca_jump using Euler's method for numerical integration
-        dCa_jump = (1 - Ca_jump) * tau_adap - (delta * Ca_jump * Ca_pre)
+        dCa_jump = ((1 - Ca_jump) / tau_adap) - (delta * Ca_jump * Ca_pre)
         Ca_jump += dCa_jump * dt
 
         # Random event to determine vesicle movement
@@ -77,55 +100,65 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
         replenish_R = ((R0 - R) * F / tau_refR) * dt
 
         # Process vesicle movements based on the computed rates
-        # Gillespie's algorithm-'a-chien (method to simulate the PDMP stochastic part)
-        if rand_event < transition_RD and R > 0: R, D = R - 1, D + 1
-        elif rand_event < transition_RD + transition_DR and D > 0: D, R = D - 1, R + 1
-        elif rand_event < transition_RD + transition_DR + replenish_R and R < R0: R, F = R + 1, F-1 
+        if rand_event < transition_RD and R > 0:
+            R, D = R - 1, D + 1
+        elif rand_event < transition_RD + transition_DR and D > 0:
+            D, R = D - 1, R + 1
+        elif rand_event < transition_RD + transition_DR + replenish_R and R < R0:
+            R, F = R + 1, F - 1 
 
         # Updating time and storing simulation results
         idx_dt += 1
-        t = idx_dt*dt
-        times.extend([t])
-        reserve_values.extend([R])
-        docked_values.extend([D])
-        fused_values.extend([F])
-        Ca_pre_values.extend([Ca_pre])
-        Ca_jump_values.extend([Ca_jump])
-        Sigmoid_proba.extend([sigmoid(Ca_pre, s, h)])
+        t = idx_dt * dt
+        times[iteration] = t
+        reserve_values[iteration] = R
+        docked_values[iteration] = D
+        fused_values[iteration] = F
+        Ca_pre_values[iteration] = Ca_pre
+        Ca_jump_values[iteration] = Ca_jump
+        Sigmoid_proba[iteration] = sigmoid(Ca_pre, s)
 
-    return times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba,release_times, spike_times
+    # Trimming arrays to actual size
+    times = times[:iteration]
+    reserve_values = reserve_values[:iteration]
+    docked_values = docked_values[:iteration]
+    fused_values = fused_values[:iteration]
+    Ca_pre_values = Ca_pre_values[:iteration]
+    Ca_jump_values = Ca_jump_values[:iteration]
+    Sigmoid_proba = Sigmoid_proba[:iteration]
+
+    return times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times
 
 
-# Parameters
-D0 = 25                               # Initial docked vesicles
+
+# Parameters to optimize
+D0 = 20                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
-F0 = 0                                # Initial fused vesicles
-tau_adap = 5.25686085e-02             # Time constant for calcium adaptation
-delta = 2.63467268e-02                # Strength of calcium jump due to AP
-tau_D = 3.22059588e+01                # Time constant for vesicle transition from reserve to docked
-tau_R = 1.82230449e+01                # Time constant for vesicle transition from docked to reserve
-tau_refR = 1.31264672e+01             # Time constant for vesicle replenishment to reserve pool
-h = 7.89550730e+00                    # Half-activation calcium concentration for release
-s = 3.46225756e-01                    # Steepness of the release sigmoidal relation
-decay_rate = 6.48332889e+00           # Rate of calcium decay
-jump_size = 1.0                       # Magnitude of calcium jumps
-release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
-dt = 1/(3*release_rate)               # Time step
-max_attempts = 300                    # Max release attempts before quiet period
-quiet_duration = 100                  # Duration of quiet period
+tau_D = 20                            # Time constant for vesicle transition from reserve to docked
+tau_R =  40                           # Time constant for vesicle transition from docked to reserve
+tau_refR = 280                        # Time constant for vesicle replenishment to reserve pool
+decay_rate = .15                     # Rate of calcium decay
+tau_adap = 40                         # Time constant for calcium adaptation
+delta = 6e-02                         # Strength of calcium jump due to AP
+s = 0.35                              # Steepness of the release sigmoidal relation
 
-#35C last optimization [2.90618671e+01 2.14234627e+01 1.07153591e+01 3.86677658e-01 1.28958937e+01 5.56455939e+00 4.88660881e-02 1.60012874e-02]
-#25C last optimization [3.22059588e+01 1.82230449e+01 1.31264672e+01 3.46225756e-01 7.89550730e+00 6.48332889e+00 5.25686085e-02 2.63467268e-02]
-# initial_params = [tau_D, tau_R, tau_refR, s, h, decay_rate, tau_adap, delta]
+# Parameters fixed
+F0 = 0                                # Initial fused vesicles
+jump_size = 1                         # Magnitude of calcium jumps
+dt = 0.01                             # Time step
+release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
+max_attempts = 300                    # Max release attempts before quiet period
+quiet_duration = 50.                  # Duration of quiet period
+
 
 # Time array to represent when pre-synaptic spikes occur
 T_end = (max_attempts/release_rate)  # Total time of simulation
 pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
 
 
-# Run Simulation
+""" # Run Simulation
 times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
-    D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
+    D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
 
 # Plot Results
 plt.figure(figsize=(14,10))
@@ -165,20 +198,54 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-# Plotting vesicle dynamics for different release rates
-#plt.figure(figsize=(12, 8))
-#plt.subplot(1, 1, 1)
-#for release_rate in [2, 5, 10, 20, 30]:
-    # Time array to represent when pre-synaptic spikes occur
-#    T_end = (max_attempts/release_rate)  # Total time of simulation
-#    pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
-#    times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
-#    D0, R0, tau_adap, delta, tau_D, tau_R, tau_refR, h, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
-#    plt.step(times, 1-docked_values/np.max(docked_values), where='post', label=f"Docked Pool (D) with release rate {release_rate}")
-#    plt.xlabel('Time')
-#    plt.ylabel('Vesicle Count')
-#    plt.title('Vesicle Release Dynamics with Replenishment for Different Release Rates')
-#    plt.grid(True)
-#    plt.legend()
+ """
+# Load your CSV files
+folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed"
+csv_files = natsorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
+labels = ["2 Hz", "5 Hz", "10 Hz", "20 Hz", "30 Hz"]
+frequencies = [int(label.split(' ')[0]) for label in labels]
 
-#plt.show()
+# Load all datasets into lists
+all_observed_data = []
+all_observed_time = []
+for file in csv_files:
+    df = pd.read_csv(file, header=None, names=['time', 'deltaF spH'])
+    all_observed_data.append(df['deltaF spH'])
+    all_observed_time.append(df['time'])
+
+
+# Plotting vesicle dynamics for different release rates
+plt.figure(figsize=(8, 12))
+plt.subplot(5, 3, 1)
+count = 1
+count2 = 1
+for release_rate in [2, 5, 10, 20, 30]:
+    # Time array to represent when pre-synaptic spikes occur
+    T_end = (max_attempts/release_rate)  # Total time of simulation
+    pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
+    times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
+    plt.subplot(5, 3, count)
+    plt.plot(all_observed_time[count2-1],all_observed_data[count2-1])
+    count2=1+count2
+    count=1+count
+
+    plt.step(times, fused_values/(D0+R0), where='post', label=f"Docked Pool (D) with release rate {release_rate}")
+    plt.xlabel('Time')
+    plt.ylabel('Vesicle Count')
+    plt.title('Vesicle Release Dynamics with Replenishment for Different Release Rates')
+    plt.grid(True)
+    plt.legend()
+    # plot Ca_pre_values
+    plt.subplot(5, 3, count)
+    count=1+count
+
+    plt.plot(times[1::2], Ca_pre_values[1::2], 'c', label="Ca_pre Values")
+    plt.legend()
+    # plot Ca_jump_values and Sigmoid_proba
+    plt.subplot(5, 3, count)
+    count=1+count
+
+    plt.plot(times[1::2], Ca_jump_values[1::2], 'm', label="Ca_jump Values")
+    plt.plot(times[1::2], Sigmoid_proba[1::2], 'b', label="Sigmoid Proba")
+    plt.legend()
+plt.show()
