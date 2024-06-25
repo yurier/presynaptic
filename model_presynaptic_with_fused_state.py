@@ -135,12 +135,12 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
 D0 = 20                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
 tau_D = 20                            # Time constant for vesicle transition from reserve to docked
-tau_R =  40                           # Time constant for vesicle transition from docked to reserve
-tau_refR = 280                        # Time constant for vesicle replenishment to reserve pool
+tau_R =  29                           # Time constant for vesicle transition from docked to reserve
+tau_refR = 290                        # Time constant for vesicle replenishment to reserve pool
 decay_rate = .15                     # Rate of calcium decay
-tau_adap = 40                         # Time constant for calcium adaptation
-delta = 6e-02                         # Strength of calcium jump due to AP
-s = 0.35                              # Steepness of the release sigmoidal relation
+tau_adap = 1                         # Time constant for calcium adaptation
+delta = 4e-02                         # Strength of calcium jump due to AP
+s = 0.38                              # Steepness of the release sigmoidal relation
 
 # Parameters fixed
 F0 = 0                                # Initial fused vesicles

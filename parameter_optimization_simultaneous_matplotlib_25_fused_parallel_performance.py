@@ -142,8 +142,8 @@ def run_simulation(args):
     return vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times)
 
 # Objective function for optimization with averaging for all datasets
-def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter=50):
-    D0, R0, tau_D, tau_R, tau_refR, decay_rate, tau_adap, delta, s = params
+def objective_all_datasets(params, all_observed_data, all_observed_time, jump_size, all_frequencies, max_attempts, quiet_duration, n_iter=30):
+    tau_D, tau_R, decay_rate, tau_adap, delta, s = params
     total_mse = 0  # Variable to store the total MSE for all datasets
 
     def process_dataset(args):
@@ -184,12 +184,12 @@ def objective_all_datasets(params, all_observed_data, all_observed_time, jump_si
 D0 = 20                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
 tau_D = 20                            # Time constant for vesicle transition from reserve to docked
-tau_R =  40                           # Time constant for vesicle transition from docked to reserve
-tau_refR = 280                        # Time constant for vesicle replenishment to reserve pool
+tau_R =  29                           # Time constant for vesicle transition from docked to reserve
+tau_refR = 290                        # Time constant for vesicle replenishment to reserve pool
 decay_rate = .15                     # Rate of calcium decay
-tau_adap = 40                         # Time constant for calcium adaptation
+tau_adap = 1                         # Time constant for calcium adaptation
 delta = 4e-02                         # Strength of calcium jump due to AP
-s = 0.35                              # Steepness of the release sigmoidal relation
+s = 0.40                              # Steepness of the release sigmoidal relation
 
 # Parameters fixed
 F0 = 0                                # Initial fused vesicles
@@ -200,8 +200,8 @@ max_attempts = 300                    # Max release attempts before quiet period
 quiet_duration = 50.                  # Duration of quiet period
 
 # Initial parameters and bounds
-initial_params = [D0, R0, tau_D, tau_R, tau_refR, decay_rate, tau_adap, delta, s]
-bounds = Bounds([0, 0, 0, 0, 0, 0, 0, 0, 0], [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf])
+initial_params = [tau_D, tau_R, decay_rate, tau_adap, delta, s]
+bounds = Bounds([0, 0, 0, 0, 0, 0], [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf])
 
 # Load your CSV files
 folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed"
@@ -218,7 +218,7 @@ import matplotlib.pyplot as plt
 
 def callback(params, all_observed_data, all_observed_time, all_frequencies):
     print(f"Callback for iteration {len(mse_values_callback)}")
-    D0, R0, tau_D, tau_R, tau_refR, decay_rate, tau_adap, delta, s = params
+    tau_D, tau_R, decay_rate, tau_adap, delta, s = params
 
     avg_freq = sum(all_frequencies) / len(all_frequencies)
     release_rate = avg_freq
@@ -337,7 +337,7 @@ result = minimize(
     method=method,
     callback=lambda params: callback(params, all_observed_data, all_observed_time, frequencies),
     bounds=bounds,
-    options={'disp': True, 'maxiter': 100, 'maxfev': 3000}
+    options={'disp': True, 'maxiter': 500, 'maxfev': 3000}
 )
 
 plt.show()

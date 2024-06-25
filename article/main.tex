@@ -7,7 +7,7 @@
 \usepackage{fixltx2e} % or subscript
 \usepackage{ragged2e}
 \usepackage{caption}
-
+\usepackage{makecell}
 \usepackage{siunitx}  % for units
 
 \linenumbers
@@ -42,6 +42,8 @@
 
 \section*{Introduction}
 
+GAP:
+No presynaptic model has taken into account temperature differences in release probability only calcium \cite{wang2021theory}.
 
 \section*{Model}
 
@@ -95,15 +97,16 @@ Calcium-dependent release probability (from docked to fused):
 	\label{tab:model_params}
 	\begin{tabular}{@{}lllll@{}}
 		\toprule
-		{\bf Symbol} & {\bf Description}                     & {\bf Unit}     & {\bf Experimental litterature}      \\
+		{\bf Symbol} & {\bf Description}                     & {\bf Unit}     & {\bf Reference values}      \\
 		\midrule
-		$R_0$          & Recycling pool capacity                                  & -  & 	\\
-		$D_0$          & Docked pool capacity                                  & - & 5-20 vesicles per bouton in cultured rat hippocampal  \\
-		&&& neurons \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001} \\
+
+		$D_0$          & Docked pool capacity                                  & - & \makecell[l]{5-20 vesicles per bouton \\in cultured rat hipp. neurons \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001}} \\
+		$R_0$          & Recycling pool capacity                                  & -  & \makecell[l]{15-40 vesicles per bouton in cultured rat hipp.\\ neurons   ($\sim$3x larger than the docked pool capacity)} \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001}	\\
+
 		\\
-		$\tau_{R\rightarrow D}$          & Vesicle transition rate from  recycling to docked                                 &  \\
-		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 &  \\
-		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  &  \\
+		$\tau_{R\rightarrow D}$          & Rate from  recycling to docked                                 &  \\
+		$\tau_{D\rightarrow R}$          & Rate from docked to recycling (mixing)                                 &  \\
+		$\tau_{F\rightarrow R}$          & Rate from fused to recycling                                  &  \\
 		\\
 %		$\rm [Ca^{2+}]_o$ & Extracellular calcium concentration & mM \\
 		$\tau_{pre}$ &  $Ca_{pre}$ attenuation recovery rate & s\\
@@ -115,6 +118,22 @@ Calcium-dependent release probability (from docked to fused):
 	\end{tabular}
 \end{table}
 
+
+
+\begin{table}[!ht]
+	\centering
+	\caption{Datasets.}
+	\label{tab:model_params}
+	\begin{tabular}{@{}llllll@{}}
+		\toprule
+		{\bf Reference} & {\bf Stim. conditions} & {\bf Tissue} & {\bf Age} & {\bf Method} & {\bf aCSF}     \\
+		\midrule
+		Fernández-Alfonso T. et al. 2008 \cite{fernandez-alfonsoKineticsSynapticVesicle2004} & \makecell[l]{300AP at 2, 5, 10, 20, 30 Hz \\ 1800AP at 30 Hz (Baf, 0.5 $\mu$M) \\ (for both 25C and 35C)}&\makecell[l]{Rat cult. hipp. \\ (autaptic)} & P1-3 & \makecell[l]{spHluorin \\ (pH imaging)} & \makecell[l]{ 119 NaCl, 2.5 KCl, \\ {\bf 2 CaCl2}, \\ 2 MgCl2, 30 glucose\\ 25 HEPES (buf.pH 7.4), \\ 10 $\mu$M CNQX \\ and 50 $\mu$M AP5} \\
+	delvendahl2016fast \cite{delvendahl2016fast} & temperature 25, 30 and 35 & \makecell[l]{Mice cult. hipp. \\ (autaptic)} \\
+
+		
+	\end{tabular}
+\end{table}
 \newpage
 \bibliography{bibliography}
 
