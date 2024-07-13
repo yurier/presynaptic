@@ -185,15 +185,15 @@ D0 = 20                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
 tau_D = 20                            # Time constant for vesicle transition from reserve to docked
 tau_R =  29                           # Time constant for vesicle transition from docked to reserve
-tau_refR = 290                    # Time constant for vesicle replenishment to reserve pool
-decay_rate = .15                  # Rate of calcium decay
+tau_refR = 290*.25                    # Time constant for vesicle replenishment to reserve pool
+decay_rate = .15*.25                  # Rate of calcium decay
 tau_adap = 1                          # Time constant for calcium adaptation
 delta = 4e-02                         # Strength of calcium jump due to AP
 s = 0.40                              # Steepness of the release sigmoidal relation
 
 # Parameters fixed
 F0 = 0                                # Initial fused vesicles
-jump_size = 1                     # Magnitude of calcium jumps
+jump_size = 1*.25                     # Magnitude of calcium jumps
 target_dt = 0.01                      # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
 max_attempts = 300                    # Max release attempts before quiet period
@@ -204,7 +204,7 @@ initial_params = [tau_D, tau_R, decay_rate, tau_adap, delta, s]
 bounds = Bounds([0, 0, 0, 0, 0, 0], [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf])
 
 # Load your CSV files
-folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed"
+folder_path = "dataset-Fernandez-Alfonso-2008-35C/preprocessed"
 csv_files = natsorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
 labels = ["2 Hz", "5 Hz", "10 Hz", "20 Hz", "30 Hz"]
 frequencies = [int(label.split(' ')[0]) for label in labels]
