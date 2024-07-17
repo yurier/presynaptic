@@ -12,8 +12,8 @@
 
 \linenumbers
 
-
-
+% new definitions
+\DeclareSIUnit{\Molar}{M}  % for molars
 
 
 \title{}
@@ -101,14 +101,14 @@ Calcium-dependent release probability (from docked to fused):
 		$D_0$          & Docked pool capacity                                  & - & 5-20 vesicles per bouton in cultured rat hippocampal  \\
 		&&& neurons \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001} \\
 		\\
-		$\tau_{R\rightarrow D}$          & Vesicle transition rate from  recycling to docked                                 &  \\
-		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 &  \\
-		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  &  \\
+		$\tau_{R\rightarrow D}$          & Vesicle transition rate from  recycling to docked                                 & \unit{\second} \\
+		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 & \unit{\second} \\
+		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  & \unit{\second}  \\
 		\\
 %		$\rm [Ca^{2+}]_o$ & Extracellular calcium concentration & mM \\
-		$\tau_{pre}$ &  $Ca_{pre}$ attenuation recovery rate & s\\
-		$\tau_{rec}$ & Calcium jump recovery rate & s\\
-		$\delta_{\rm Ca}$ &  & \\
+		$\tau_{pre}$ &  $Ca_{pre}$ attenuation recovery rate & \unit{\second} \\
+		$\tau_{rec}$ & Calcium jump recovery rate & \unit{\second} \\
+		$\delta_{\rm Ca}$ & Jump attenuation fraction  & \unit{\per \second \per \milli \Molar} \\
 		\\
 		Sigmoid parameters\\
 		\bottomrule
