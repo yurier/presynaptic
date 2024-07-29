@@ -96,7 +96,7 @@ We do not know how the alkalinization/reacification rates are related to the exo
 - [X] Fit to data from Fernandez Alfonso 2008 (25 C)
 - ![Figure](figures/Fernandez_Alfonso_2008_simulation_25C.png)
 
-- [X] Fit to data from Fernandez Alfonso 2008 (35 C)
+- [X] Fit to data from Fernandez Alfonso 2008 (35 C) - done by changing by multiplying tau_refR, decay_rate and jump_size by 0.25 from the 25C fit
 - ![Figure](figures/Fernandez_Alfonso_2008_simulation_35C.png)
 
 ## DATASETS
