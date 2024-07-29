@@ -136,15 +136,15 @@ D0 = 20                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
 tau_D = 20                            # Time constant for vesicle transition from reserve to docked
 tau_R =  29                           # Time constant for vesicle transition from docked to reserve
-tau_refR = 290                        # Time constant for vesicle replenishment to reserve pool
-decay_rate = .15                     # Rate of calcium decay
+tau_refR = 290*.25                        # Time constant for vesicle replenishment to reserve pool
+decay_rate = .15*.25                     # Rate of calcium decay
 tau_adap = 1                         # Time constant for calcium adaptation
 delta = 4e-02                         # Strength of calcium jump due to AP
 s = 0.38                              # Steepness of the release sigmoidal relation
 
 # Parameters fixed
 F0 = 0                                # Initial fused vesicles
-jump_size = 1                         # Magnitude of calcium jumps
+jump_size = 1*.25                         # Magnitude of calcium jumps
 dt = 0.01                             # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
 max_attempts = 300                    # Max release attempts before quiet period
@@ -200,7 +200,7 @@ plt.show()
 
  """
 # Load your CSV files
-folder_path = "dataset-Fernandez-Alfonso-2008-25C/preprocessed"
+folder_path = "dataset-Fernandez-Alfonso-2008-35C/preprocessed"
 csv_files = natsorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
 labels = ["2 Hz", "5 Hz", "10 Hz", "20 Hz", "30 Hz"]
 frequencies = [int(label.split(' ')[0]) for label in labels]
@@ -215,8 +215,8 @@ for file in csv_files:
 
 
 # Plotting vesicle dynamics for different release rates
-plt.figure(figsize=(8, 12))
-plt.subplot(5, 3, 1)
+plt.figure(figsize=(12*2*.75, 3*3*.75))
+plt.subplot(3, 5, 1)
 count = 1
 count2 = 1
 for release_rate in [2, 5, 10, 20, 30]:
@@ -224,28 +224,31 @@ for release_rate in [2, 5, 10, 20, 30]:
     T_end = (max_attempts/release_rate)  # Total time of simulation
     pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
     times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
-    plt.subplot(5, 3, count)
-    plt.plot(all_observed_time[count2-1],all_observed_data[count2-1])
-    count2=1+count2
-    count=1+count
+    plt.subplot(3, 5, count)
+    plt.plot(all_observed_time[count-1],all_observed_data[count-1])
+    #count2=1+count2
+    #count=1+count
 
-    plt.step(times, fused_values/(D0+R0), where='post', label=f"Docked Pool (D) with release rate {release_rate}")
-    plt.xlabel('Time')
-    plt.ylabel('Vesicle Count')
-    plt.title('Vesicle Release Dynamics with Replenishment for Different Release Rates')
+    plt.step(times, fused_values/(D0+R0), where='post', label="Fused")
+    if release_rate == 2:
+        plt.ylabel('Vesicle Count')
+
     plt.grid(True)
+    plt.title(f"{release_rate} Hz, 35C")
     plt.legend()
     # plot Ca_pre_values
-    plt.subplot(5, 3, count)
-    count=1+count
+    plt.subplot(3, 5, count+5)
+    #count=1+count
+    plt.plot(times[1::2], Ca_pre_values[1::2], 'c')
+    if release_rate == 2:
+        plt.ylabel('Ca_pre')
 
-    plt.plot(times[1::2], Ca_pre_values[1::2], 'c', label="Ca_pre Values")
-    plt.legend()
     # plot Ca_jump_values and Sigmoid_proba
-    plt.subplot(5, 3, count)
+    plt.subplot(3, 5, count+10)
     count=1+count
 
     plt.plot(times[1::2], Ca_jump_values[1::2], 'm', label="Ca_jump Values")
     plt.plot(times[1::2], Sigmoid_proba[1::2], 'b', label="Sigmoid Proba")
+    plt.xlabel('Time')
     plt.legend()
 plt.show()

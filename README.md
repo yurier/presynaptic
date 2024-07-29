@@ -96,12 +96,12 @@ We do not know how the alkalinization/reacification rates are related to the exo
 - [X] Fit to data from Fernandez Alfonso 2008 (25 C)
 - ![Figure](figures/Fernandez_Alfonso_2008_simulation_25C.png)
 
-- [ ] Fit to data from Fernandez Alfonso 2008 (35 C)
-
+- [X] Fit to data from Fernandez Alfonso 2008 (35 C)
+- ![Figure](figures/Fernandez_Alfonso_2008_simulation_35C.png)
 ## DATASETS
 Fernandez Alfonso 2008 data (25 C)
-![Figure](figures/Fernandez_Alfonso_2008_dataset_25C.png)
- 
+Fernandez Alfonso 2008 data (35 C)
+
 ## Some papers
 
 - [Joselevitch, Christina, and David Zenisek. "Direct observation of vesicle transport on the synaptic ribbon provides evidence that vesicles are mobilized and prepared rapidly for release." Journal of Neuroscience 40.39 (2020): 7390-7404.](https://www.jneurosci.org/content/40/39/7390)
