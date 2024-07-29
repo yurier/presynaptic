@@ -98,9 +98,10 @@ We do not know how the alkalinization/reacification rates are related to the exo
 
 - [X] Fit to data from Fernandez Alfonso 2008 (35 C)
 - ![Figure](figures/Fernandez_Alfonso_2008_simulation_35C.png)
+
 ## DATASETS
-Fernandez Alfonso 2008 data (25 C)
-Fernandez Alfonso 2008 data (35 C)
+- Fernandez Alfonso 2008 data (25 C)
+- Fernandez Alfonso 2008 data (35 C)
 
 ## Some papers
 
