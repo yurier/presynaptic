@@ -97,16 +97,17 @@ Calcium-dependent release probability (from docked to fused):
 	\label{tab:model_params}
 	\begin{tabular}{@{}lllll@{}}
 		\toprule
-		{\bf Symbol} & {\bf Description}                     & {\bf Unit}     & {\bf Reference values}      \\
+		{\bf Symbol} & {\bf Description}                     & {\bf Value}     & {\bf Reference values}      \\
 		\midrule
 
 		$D_0$          & Docked pool capacity                                  & - & \makecell[l]{5-20 vesicles per bouton \\in cultured rat hipp. neurons \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001}} \\
 		$R_0$          & Recycling pool capacity                                  & -  & \makecell[l]{15-40 vesicles per bouton in cultured rat hipp.\\ neurons   ($\sim$3x larger than the docked pool capacity)} \cite{rizzoliSynapticVesiclePools2005,schikorskiMorphologicalCorrelatesFunctionally2001}	\\
 
 		\\
-		$\tau_{R\rightarrow D}$          & Vesicle transition rate from  recycling to docked                                 & \unit{\second} \\
-		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 & \unit{\second} \\
-		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  & \unit{\second}  \\
+		$\tau_{R\rightarrow D}$          & Vesicle transition rate from  recycling to docked                                 & 20 \unit{\second} & 1 s (Rizzoli and Betz, 2005)\\ 
+		$\tau_{D\rightarrow R}$          & Vesicle transition rate from docked to recycling (mixing)                                 & 29 \unit{\second} & 20 s (when depleted) to 5 min (hypertonic shock)
+		(Rizzoli and Betz, 2005; Pyle et al., 2000) \\
+		$\tau_{F\rightarrow R}$          & Vesicle transition rate from fused to recycling                                  & 290 \unit{\second}  & 20–30 s (Rizzoli and Betz, 2005) \\
 		\\
 %		$\rm [Ca^{2+}]_o$ & Extracellular calcium concentration & mM \\
 		$\tau_{pre}$ &  $Ca_{pre}$ attenuation recovery rate & \unit{\second} \\

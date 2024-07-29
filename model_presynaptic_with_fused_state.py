@@ -136,9 +136,9 @@ D0 = 20                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
 tau_D = 20                            # Time constant for vesicle transition from reserve to docked
 tau_R =  29                           # Time constant for vesicle transition from docked to reserve
-tau_refR = 290*.25                        # Time constant for vesicle replenishment to reserve pool
-decay_rate = .15*.25                     # Rate of calcium decay
-tau_adap = 1                         # Time constant for calcium adaptation
+tau_refR = 290*.25                    # Time constant for vesicle replenishment to reserve pool
+decay_rate = .15*.25                  # Rate of calcium decay
+tau_adap = 1                          # Time constant for calcium adaptation
 delta = 4e-02                         # Strength of calcium jump due to AP
 s = 0.38                              # Steepness of the release sigmoidal relation
 
