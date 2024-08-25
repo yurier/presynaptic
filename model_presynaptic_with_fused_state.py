@@ -4,25 +4,46 @@ from natsort import natsorted
 import os
 import pandas as pd
 
+# Define the sigmoid function for temperature scaling
+def sigmoid_temperature(temp):
+    """
+    Sigmoid function tailored for the specified temperature response.
+    Returns a scaling factor that is 1 at 25°C and 0.25 at 35°C.
+    """
+    temp_mid = 30  # Midpoint temperature
+    steepness = 0.22  # Calculated steepness to fit conditions
+    return 1 / (1 + np.exp(steepness * (temp - temp_mid)))
+
 # Defining the sigmoid function used for vesicle release probability
 def sigmoid(Ca_pre, s):
     return 1 / (1 + np.exp(-s*(Ca_pre-8)))
 
-def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T_end, dt, max_attempts, quiet_duration, pre_times):
+def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, s, T_end, dt, max_attempts, quiet_duration, pre_times, temperature):
     """
-    This function simulates the vesicle release with decay.
+    This function simulates vesicle release with decay, with temperature-dependent scaling.
     Parameters:
         - D0, R0, F0: Initial values for D (docked), R (reserve) vesicles and F (fused).
         - tau_adap, delta: Parameters for Ca_jump adaptation.
-        - tau_D, tau_R, tau_refR: Time constants for transitions.
-        - s, decay_rate: Parameters for sigmoid function and decay rate.
-        - jump_size: Size of the jump in calcium concentration.
+        - s: Parameter for sigmoid function.
         - T_end, dt: Total time and time step for simulation.
         - max_attempts: Maximum number of release attempts.
         - quiet_duration: Duration of quiet period.
+        - pre_times: Times when presynaptic spikes occur.
+        - temperature: Temperature at which the simulation is run.
     Returns:
-        - times, reserve_values, docked_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times: Simulation results.
+        - Simulation results.
     """
+
+    # Calculate the scaling factor based on the provided temperature
+    scaling_factor = sigmoid_temperature(temperature)
+
+    # Adjust parameters using the scaling factor
+    tau_D = 20 * scaling_factor
+    tau_R = 29 * scaling_factor
+    tau_refR = 290 * scaling_factor
+    decay_rate = 0.15 * scaling_factor
+    jump_size = 1 * scaling_factor
+
     # Initializing vesicle counts, calcium concentration, and Ca_jump
     R, D, F, Ca_pre, Ca_jump = int(R0), int(D0), F0, 0, 1  
 
@@ -129,36 +150,30 @@ def vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_re
 
     return times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times
 
-
-
 # Parameters to optimize
 D0 = 20                               # Initial docked vesicles
 R0 = 30                               # Initial reserve vesicles
-tau_D = 20                            # Time constant for vesicle transition from reserve to docked
-tau_R =  29                           # Time constant for vesicle transition from docked to reserve
-tau_refR = 290*.25                    # Time constant for vesicle replenishment to reserve pool
-decay_rate = .15*.25                  # Rate of calcium decay
 tau_adap = 1                          # Time constant for calcium adaptation
 delta = 4e-02                         # Strength of calcium jump due to AP
 s = 0.38                              # Steepness of the release sigmoidal relation
 
 # Parameters fixed
 F0 = 0                                # Initial fused vesicles
-jump_size = 1*.25                         # Magnitude of calcium jumps
 dt = 0.01                             # Time step
 release_rate = 30.                    # Probability of release per time step (used for Poisson approximation)
 max_attempts = 300                    # Max release attempts before quiet period
 quiet_duration = 50.                  # Duration of quiet period
-
+temperature = 35                      # For example, simulate at 35°C
 
 # Time array to represent when pre-synaptic spikes occur
 T_end = (max_attempts/release_rate)  # Total time of simulation
 pre_times = np.linspace(0, max_attempts * (1/release_rate), max_attempts, endpoint=False)
 
+# Example call with temperature
+results = vesicle_release_with_decay(D0, R0, F0, tau_adap, delta, s, T_end, dt, max_attempts, quiet_duration, pre_times, temperature)
 
-""" # Run Simulation
-times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = vesicle_release_with_decay(
-    D0, R0, F0, tau_adap, delta, tau_D, tau_R, tau_refR, s, decay_rate, jump_size, T_end, dt,  max_attempts, quiet_duration, pre_times)
+# Unpack results for plotting or further analysis
+times, reserve_values, docked_values, fused_values, Ca_pre_values, Ca_jump_values, Sigmoid_proba, release_times, spike_times = results
 
 # Plot Results
 plt.figure(figsize=(14,10))
@@ -198,7 +213,7 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
- """
+'''
 # Load your CSV files
 folder_path = "dataset-Fernandez-Alfonso-2008-35C/preprocessed"
 csv_files = natsorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.csv')])
@@ -252,3 +267,4 @@ for release_rate in [2, 5, 10, 20, 30]:
     plt.xlabel('Time')
     plt.legend()
 plt.show()
+'''
